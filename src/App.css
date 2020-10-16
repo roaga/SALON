@@ -70,6 +70,7 @@ input {
     border-bottom: 2px solid orange;
     color: "#FCB5B5";
     outline: none;
+
 }
 input[type=submit] {
     width: 20%;
@@ -82,5 +83,8 @@ input[type=submit] {
     background: #FAF6F6; 
     border: none;
     cursor: pointer;
-    color: "#916953";
+    color: black;
+    background-color: orange;
+    box-shadow: 0px 1px 10px grey;
+    margin: 32px;
 }

@@ -86,11 +86,11 @@ const MenuButton = (props) => {
     let shadow = location.pathname === props.path ? "0px 1px 10px grey" : "0px 0px 0px grey";
     let icon = null;
     if (props.pageName === "Home") {
-        icon = <IoMdHome size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 4, boxShadow: shadow}}/>;
+        icon = <IoMdHome size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 8, boxShadow: shadow}}/>;
     } else if (props.pageName === "Dashboard") {
-        icon = <IoMdMap size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 4, boxShadow: shadow}}/>;
+        icon = <IoMdMap size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 8, boxShadow: shadow}}/>;
     } else if (props.pageName === "Account") {
-        icon = <IoMdContact size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 4, boxShadow: shadow}}/>;
+        icon = <IoMdContact size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 8, boxShadow: shadow}}/>;
     }
 
     return(

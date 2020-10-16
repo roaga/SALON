@@ -81,12 +81,12 @@ export default function Account(props) {
                     </form>
 
                     {onLoginPage ?
-                        <h6 style={{color: colors.primary, cursor: "pointer"}} onClick={() => setOnLoginPage(false)}>New here? Sign up.</h6>
+                        <h6 style={{color: colors.dark, cursor: "pointer"}} onClick={() => setOnLoginPage(false)}>New here? Sign up.</h6>
                     :
-                        <h6 style={{color: colors.primary, cursor: "pointer"}} onClick={() => setOnLoginPage(true)}>Have an account? Log in.</h6>
+                        <h6 style={{color: colors.dark, cursor: "pointer"}} onClick={() => setOnLoginPage(true)}>Have an account? Log in.</h6>
                     }
                     {onLoginPage ?
-                        <h6 style={{color: colors.primary, cursor: "pointer"}} onClick={() => resetPassword()}>Forgot your password?</h6>
+                        <h6 style={{color: colors.dark, cursor: "pointer"}} onClick={() => resetPassword()}>Forgot your password?</h6>
                     : null}
                 </div>
             }

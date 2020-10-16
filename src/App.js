@@ -56,7 +56,7 @@ export default function App() {
 
 function NavBar() {
     return (
-        <div style={{display: "flex", flexDirection: "row", boxShadow: "0px 2px 20px grey"}}>
+        <div style={{display: "flex", flexDirection: "row", boxShadow: "0px 2px 20px grey", borderBottomRightRadius: 10, borderBottomLeftRadius: 10}}>
             <h1 style={{marginLeft: 64, color: colors.primary, marginTop: 8, width: 600}}>Project Name</h1>
             <div style={{width: "100%", justifyContent: "flex-end", display: "flex"}}>
                 <div style={{width: "50%", flexDirection: "row", display: "flex", padding: 8, justifyContent: "space-evenly"}}>

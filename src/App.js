@@ -56,7 +56,7 @@ export default function App() {
 
 function NavBar() {
     return (
-        <div style={{display: "flex", flexDirection: "row"}}>
+        <div style={{display: "flex", flexDirection: "row", boxShadow: "0px 2px 20px grey"}}>
             <h1 style={{marginLeft: 64, color: colors.primary, marginTop: 8, width: 600}}>Project Name</h1>
             <div style={{width: "100%", justifyContent: "flex-end", display: "flex"}}>
                 <div style={{width: "50%", flexDirection: "row", display: "flex", padding: 8, justifyContent: "space-evenly"}}>
@@ -83,13 +83,14 @@ const MenuButton = (props) => {
     const location = useLocation();
 
     let color = location.pathname === props.path ? colors.primary : colors.secondary;
+    let shadow = location.pathname === props.path ? "0px 1px 10px grey" : "0px 0px 0px grey";
     let icon = null;
     if (props.pageName === "Home") {
-        icon = <IoMdHome size={32} style={{alignSelf: "center", color: color}}/>;
+        icon = <IoMdHome size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 4, boxShadow: shadow}}/>;
     } else if (props.pageName === "Dashboard") {
-        icon = <IoMdMap size={32} style={{alignSelf: "center", color: color}}/>;
+        icon = <IoMdMap size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 4, boxShadow: shadow}}/>;
     } else if (props.pageName === "Account") {
-        icon = <IoMdContact size={32} style={{alignSelf: "center", color: color}}/>;
+        icon = <IoMdContact size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 4, boxShadow: shadow}}/>;
     }
 
     return(

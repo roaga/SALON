@@ -4,10 +4,10 @@ import {BrowserRouter as Router, Switch, Route, useHistory, useLocation} from "r
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import * as firebase from 'firebase'
 
-import {IoMdCall, IoMdBook, IoMdCloseCircle} from "react-icons/io";
+import { IoMdCall, IoMdBook, IoMdCloseCircle } from "react-icons/io";
 
 import '../App.css';
-import {colors} from '../App.js'
+import { colors } from '../App.js'
 
 export default function CallScreen() {
     const [connected, setConnected] = useState(true);
@@ -19,6 +19,7 @@ export default function CallScreen() {
     const [timeSinceSpoke, setTimeSinceSpoke] = useState(0);
     const [hasSpoken, setHasSpoken] = useState(false);
     const [users, setUsers] = useState(["ro.agarwal@hotmail.com", "arjun11verma@gmail.com"]);
+    var key = 0;
 
     const interval = useRef(undefined);
     const { transcript, resetTranscript } = useSpeechRecognition();
@@ -26,6 +27,10 @@ export default function CallScreen() {
     const history = useHistory();
     const topicName = location.pathname.split("/")[2];
     const elementRef = useRef();
+
+    const [audioBLOB, setAudioBLOB] = useState(2)
+    const [transcript, setTranscript] = useState("");
+    const serverPort = 3001;
 
     const endCall = () => {
         history.push('/topicview/' + topicName);
@@ -87,6 +92,61 @@ export default function CallScreen() {
         SpeechRecognition.startListening({continuous: true});
     }
 
+    socket.on('new comment', data => {
+        if(data !== undefined || data !== null) {
+            let arr = allText;
+            var check = true;
+
+            for(var i = data.length - 1; i > 0; i--) {
+                for(var j = 0; j < arr.length; j++) {
+                    if(arr[j].text === data[i].user.split("@")[0] + ": \n" + data[i].content) {
+                        check = false;
+                        break;
+                    }
+                }
+                if(check) {
+                    let flags = flagchecks.check(data[i].content);
+                    arr.push({ text: data[i].user.split("@")[0] + ": \n" + data[i].content, flags: flags });
+
+                    setAllText(arr);
+                    setConnected(keyInc());
+
+                    console.log(allText);
+                } else {
+                    break;
+                }
+            }
+        }
+    });
+
+    var user = firebase.auth().currentUser
+
+    if (user != null) {
+        socket.emit('passUsername', user.email);
+    }
+
+    const addTrancsript = (transcriptData) => {
+        var fulldata = {'user': user.email, 'transcript': transcriptData};
+        socket.emit('transcript data', fulldata);
+    }
+
+    var interval;
+
+    const sendAudio = (audioBinData) => {
+        interval = setInterval(() => {
+            socket.emit('get audio', {'user': user.email, 'audioData': audioBinData});
+        }, 1000);
+    }
+
+    const endAudio = () => {
+        clearInterval(interval);
+    }
+
+    const keyInc = () => {
+        key += 1;
+        return key;
+    }
+
     return (
         <div className="container">
             {firebase.auth().currentUser != null ?
@@ -116,6 +176,8 @@ export default function CallScreen() {
                                         let arr = allText;
                                         arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText, flags: flags});
                                         setAllText(arr);
+
+                                        socket.emit('comment', { 'user': user, 'content': chatText });
                                     }
                                     elementRef.current.scrollIntoView();
                                     setChatText("");
@@ -136,10 +198,10 @@ export default function CallScreen() {
                                 })}
                             </div>
                         </div>
-                    : <h2 style={{textAlign: "center"}}>Searching for a salon...</h2>
+                        : <h2 style={{ textAlign: "center" }}>Searching for a salon...</h2>
                     }
                 </div>
-            :
+                :
                 <div>
                     <h1>Log In or Sign Up</h1>
                 </div>
@@ -149,8 +211,8 @@ export default function CallScreen() {
 }
 
 const flagchecks = {
-    check: function(text) {
-        let flags = {isOpinion: false, isSupported: false, isClaim: false}
+    check: function (text) {
+        let flags = { isOpinion: false, isSupported: false, isClaim: false }
 
         text = text.toLowerCase();
 
@@ -159,9 +221,9 @@ const flagchecks = {
         const isClaimWords = ["known", "know", "fact", "true", "false", "evident", "obvious", "clear", "consensus", "agreed", "evidence", "data", "certainty", "impossible", "right", "wrong"];
 
         text.trim().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").split(' ').forEach(word => {
-            if (isOpinionWords.includes(word)) {flags.isOpinion = true;}
-            if (isSupportedWords.includes(word)) {flags.isSupported = true;}
-            if (isClaimWords.includes(word)) {flags.isClaim = true;}
+            if (isOpinionWords.includes(word)) { flags.isOpinion = true; }
+            if (isSupportedWords.includes(word)) { flags.isSupported = true; }
+            if (isClaimWords.includes(word)) { flags.isClaim = true; }
         });
         return flags;
     }

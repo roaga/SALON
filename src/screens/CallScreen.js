@@ -26,12 +26,12 @@ export default function CallScreen() {
                         <div style={{position: "absolute", right: 0, top: 200, width: "50%", height: "65%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
                             <div style={{paddingBottom: "20%"}}>
                                 {allText.map(item => {
-                                    let valid = !item.flags.isOpinion && item.flags.isSupported;
+                                    let valid = !item.flags.isOpinion && (item.flags.isSupported || !item.flags.isClaim);
                                     return (
                                         <div style={{display: "flex", flexDirection: "row"}}>
-                                            <div style={{background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256}}>
+                                            <div class="App-logo-spin" style={{background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256, animation: valid ? "" : "App-logo-spin infinite 0.4s alternate linear"}}>
                                                 <h4 style={{margin: 4}}>{item.flags.isOpinion ? "Is this an opinion?" : ""}</h4>
-                                                <h4 style={{margin: 4}}>{item.flags.isSupported ? "" : "Is this unsupported?"}</h4>
+                                                <h4 style={{margin: 4}}>{item.flags.isSupported || !(item.flags.isOpinion || item.flags.isClaim) ? "" : "Is this unsupported?"}</h4>
                                                 <h4 style={{margin: 4}}>{item.flags.isClaim ? "Is the evidence factual?" : ""}</h4>
                                             </div>
                                             <h4 style={{marginLeft: 32, marginRight: 32, whiteSpace: "pre-line"}}>{item.text}</h4>

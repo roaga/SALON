@@ -161,16 +161,16 @@ export default function CallScreen() {
     // }
 
     return (
-        <div className="container">
+        <div className="container" style={{backgroundImage: 'url(' + require('../cool-background-2.svg') + ')', backgroundSize: "cover"}}>
             {firebase.auth().currentUser != null ?
                 <div style={{width: "100%", height: 750, minHeight: 750, overflowY: "hidden"}}>
-                    <h1>Discussion on {topicName}</h1>
-                    <div style={{alignItems: "center", justifyContent: "center", display: "flex"}}>
-                        <IoMdCloseCircle class="menu-button" size={32} color={colors.primary} style={{alignSelf: "center"}} onClick={() => endCall()}/>
+                    <div style={{alignItems: "center", justifyContent: "space-between", display: "flex", flexDirection: "row"}}>
+                        <IoMdCloseCircle class="menu-button" size={32} color={colors.primary} style={{marginLeft: 64}} onClick={() => endCall()}/>
+                        <h1 style={{textAlign: "right"}}>Discussion on {topicName}</h1>
                     </div>
                     {connected ? 
                         <div>
-                            <div style={{position: "absolute", right: 0, top: 250, width: "50%", height: "60%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
+                            <div style={{position: "absolute", right: 0, top: 200, width: "50%", height: "65%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
                                 <div style={{paddingBottom: "20%"}}>
                                     {allText.map(item => {
                                         let valid = !item.flags.isOpinion && (item.flags.isSupported || !item.flags.isClaim);

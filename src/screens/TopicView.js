@@ -32,15 +32,15 @@ export default function TopicView() {
         // setPosts([{topic: "Racial Justice", title: "Should we close prisons?", body: "Random gibberish body transcript"}])
     }, []);
 
-    return loading ? (<div className="container"></div>) : (
-        <div className="container">
+    return loading ? (<div className="container" style={{backgroundImage: 'url(' + require('../cool-background-4.svg') + ')', backgroundSize: "cover"}}></div>) : (
+        <div className="container" style={{backgroundImage: 'url(' + require('../cool-background-4.svg') + ')', backgroundSize: "cover"}}>
             {firebase.auth().currentUser != null ?
-                <div style={{width: "100%", height: 680, minHeight: 680, overflowY: "scroll"}}>
+                <div style={{height: 680, minHeight: 680, overflowY: "scroll", backgroundColor: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", padding: 16, width: "50%", marginLeft: "25%"}}>
                     <h1>{topicName}</h1>
                     <div style={{alignItems: "center", justifyContent: "center", display: "flex"}}>
                         <IoMdCall className="menu-button" size={28} style={{alignSelf: "center", color: colors.primary, borderRadius: 10, padding: 8}} onClick={() => history.push("/callscreen/" + topicName)}/>
                     </div>
-                    <div style={{display: "flex", flexDirection: "column", justifyContent:'center', alignItems:'center'}}>
+                    <div style={{display: "flex", flexDirection: "column", justifyContent:'center', alignItems:'center', marginTop: 32}}>
                         {posts.map(post => {
                             return (
                                 <Post post={post} key={post.title}/>

@@ -7,13 +7,13 @@ import {IoMdCall, IoMdBook} from "react-icons/io";
 import '../App.css';
 import {colors} from '../App.js'
 
-const topics = ["Response to COVID-19", "Racial Justice", "Election 2020"];
+const topics = ["Response to COVID-19", "Racial Justice", "Election 2020", "American Healthcare", "Climate Change", "Legal and Illegal Immigration", "Education"];
 
 export default function Dashboard() {
     return (
-        <div className="container">
+        <div className="container" style={{backgroundImage: 'url(' + require('../cool-background-4.svg') + ')', backgroundSize: "cover"}}>
             {firebase.auth().currentUser != null ?
-                <div style={{width: "100%", height: 680, minHeight: 680, overflowY: "scroll"}}>
+                <div style={{height: 680, minHeight: 680, overflowY: "scroll", backgroundColor: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", padding: 16, width: "50%", marginLeft: "25%"}}>
                     <h1>Explore Topics</h1>
                     <SearchBar/>
                     <div style={{display: "flex", flexDirection: "column", justifyContent:'center', alignItems:'center'}}>
@@ -54,9 +54,9 @@ function SearchBar(props) {
     }, [text]);
 
     return (
-        <form onSubmit={(e) => e.preventDefault()} style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
+        <form onSubmit={(e) => e.preventDefault()} style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", marginBottom: 32}}>
             <input placeholder="Search for topics..." value={text} onChange={event => setText(event.target.value)}/>
-            <div style={{position: "absolute", top: 236, background: "white", boxShadow: "0px 1px 10px grey", borderRadius: 10, width: "30%", overflowY: "scroll", maxHeight: 400, alignItems: "center", justifyContent: "center", display: "flex", flexDirection: "column"}}>
+            <div style={{position: "absolute", top: 236, background: "white", boxShadow: "0px 1px 10px grey", borderRadius: 10, width: "30%", overflowY: "scroll", maxHeight: 400, alignItems: "center", justifyContent: "center", display: "flex", flexDirection: "column", paddingBlockStart: text.length > 0 ? 200 : 0}}>
                 {results.map(result => <TopicCard topic={result} style={{width: "100%"}}/>)}
             </div>
         </form>

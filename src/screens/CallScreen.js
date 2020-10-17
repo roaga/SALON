@@ -101,6 +101,7 @@ export default function CallScreen() {
                 setHasSpoken(true);
                 setAllText(arr);
                 setOldTranscript(transcript);
+                elementRef.current.scrollIntoView();
             } 
         }
     }, 500);
@@ -201,7 +202,7 @@ export default function CallScreen() {
                                 }} style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
                                     <input placeholder="Send a message..." value={chatText} onChange={event => setChatText(event.target.value)} style={{width: "45%", position: "fixed", bottom: "15%"}}/>
                                 </form>
-                                <div ref={elementRef} style={{width: 1}}></div>
+                                <div ref={elementRef}></div>
                             </div>
                             <div style={{display: "flex", flexDirection: "column", marginTop: 16}}>
                                 {users.map(user => {

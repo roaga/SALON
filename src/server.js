@@ -37,6 +37,10 @@ io.on('connection', (socket) => {
         liveLog.push({'user': data.user, 'content': data.content});
     });
 
+    socket.on('editcomment', function (data) {
+        liveLog[data.index].content = data.content;
+    });
+
     socket.on('transcript data', function (data) {
         for (var i = 0; i < userMap.length; i++) {
             if ((userMap[i].user === data.user)) {

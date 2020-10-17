@@ -37,6 +37,11 @@ export default function CallScreen() {
         console.log("emitted");
     }
 
+    const editComment = (i, c) => {
+        socket.emit('editcomment', {'content': c, 'index': i});
+        console.log("emitted");
+    }
+
     const endCall = () => {
         if (allText.length > 0) {
             firebase.firestore().collection('posts').add({
@@ -106,12 +111,16 @@ export default function CallScreen() {
                 if (timeSinceSpoke > 1.5 || !hasSpoken) {
                     let oldText = transcriptIndex >= 0 ? arr[transcriptIndex].text : "";
                     arr.push({ text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""), flags: [] });
+                    addComment(firebase.auth().currentUser.email, firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""));
+                    
                     setTranscriptIndex(arr.length - 1);
                     let flags = flagchecks.check(transcript);
                     arr[arr.length - 1].flags = flags;
                 } else {
                     let flags = flagchecks.check(transcript);
                     let oldText = arr[transcriptIndex].text;
+
+                    editComment(transcriptIndex, firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.startsWith(oldText) ? transcript : oldText + " " + transcript);
                     arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.startsWith(oldText) ? transcript : oldText + " " + transcript;
                     arr[transcriptIndex].flags = flags;
                 }

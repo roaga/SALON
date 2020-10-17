@@ -10,6 +10,11 @@ import {colors} from '../App.js'
 const topics = ["Response to COVID-19", "Racial Justice", "Election 2020", "American Healthcare", "Climate Change", "Legal and Illegal Immigration", "Education"];
 
 export default function Dashboard() {
+    const history = useHistory();
+    if (firebase.auth().currentUser == null) {
+        history.push("/account");
+    }
+    
     return (
         <div className="container" style={{backgroundImage: 'url(' + require('../cool-background-4.svg') + ')', backgroundSize: "cover"}}>
             {firebase.auth().currentUser != null ?

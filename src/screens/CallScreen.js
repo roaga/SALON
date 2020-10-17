@@ -8,17 +8,37 @@ import '../App.css';
 import {colors} from '../App.js'
 
 export default function CallScreen() {
-    const [calls, setCalls] = useState([]);
+    const [connected, setConnected] = useState(true);
+    const [chatText, setChatText] = useState("");
+    const [allText, setAllText] = useState("alltext");
 
     const location = useLocation();
     const topicName = location.pathname.split("/")[2];
+    const elementRef = useRef();
+
 
     return (
         <div className="container">
             {firebase.auth().currentUser != null ?
                 <div style={{width: "100%", height: 680, minHeight: 680, overflowY: "scroll"}}>
                     <h1>Discussion on {topicName}</h1>
-                    <h2>Call info: {}</h2>
+                    {connected ? 
+                        <div style={{position: "absolute", right: 0, top: 200, width: "50%", height: "65%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
+                            <h4 style={{margin: 32, whiteSpace: "pre-line", paddingBottom: "15%"}}>{allText}</h4>
+                            <form onSubmit={(e) => {
+                                if (chatText.length > 0) {
+                                    setAllText(allText + "\n\n" + chatText);
+                                }
+                                elementRef.current.scrollIntoView();
+                                setChatText("");
+                                e.preventDefault();
+                            }} style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
+                                <input placeholder="Send a message..." value={chatText} onChange={event => setChatText(event.target.value)} style={{width: "45%", position: "fixed", bottom: "15%"}}/>
+                            </form>
+                            <div ref={elementRef}></div>
+                        </div>
+                    : <h2 style={{textAlign: "center"}}>Searching for a salon...</h2>
+                    }
                 </div>
             :
                 <div>

@@ -27,13 +27,11 @@ io.on("connection", (socket) => {
         clearInterval(interval);
     }
 
-    clients.push(socket);
-
     interval = setInterval(() => getApiAndEmit(socket), 1000); // every second, it returns the socket data
 
     socket.on("passUsername", function (data) {
         var isValidUser = true;
-        var tempDict = { 'user': data, 'transcript': [], 'audio': 0 };
+        var tempDict = { 'user': data, 'transcript': []};
         for (var i = 0; i < userMap.length; i++) {
             if (userMap[i].user === data) {
                 isValidUser = false;
@@ -42,7 +40,7 @@ io.on("connection", (socket) => {
         if (isValidUser) {
             console.log("User " + data + " has joined");
             userMap.push(tempDict);
-            clients.push({ 'socket': socket, 'user': data });
+            clients.push({'socket': socket, 'user': data });
         }
     });
 
@@ -64,8 +62,7 @@ io.on("connection", (socket) => {
                 if (data.transcript !== "") {
                     liveLog.push({user: data.user, content: data.transcript});
                     userMap[i].transcript.push(data.transcript);
-                }   
-                userMap[i].audio = data.audioBLOB;
+                }
                 break;
             }
         }
@@ -102,4 +99,5 @@ io.on("connection", (socket) => {
 
 const getApiAndEmit = (socket) => {
     socket.broadcast.emit('new comment', liveLog);
+    socket.broadcast.emit('listeningforaudio', liveAudioLog);  
 };

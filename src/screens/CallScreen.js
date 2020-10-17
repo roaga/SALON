@@ -57,12 +57,13 @@ export default function CallScreen() {
     });
 
     var user = firebase.auth().currentUser
+
     if (user != null) {
         socket.emit('passUsername', user.email);
     }
 
     const addTrancsript = (transcriptData) => {
-        var fulldata = { 'user': user.email, 'transcript': transcriptData, 'audioBLOB': audioBLOB };
+        var fulldata = {'user': user.email, 'transcript': transcriptData};
         socket.emit('transcript data', fulldata);
     }
 
@@ -112,7 +113,7 @@ export default function CallScreen() {
                                     let user = firebase.auth().currentUser.email;
                                     arr.push({ text: user.split("@")[0] + ": \n" + chatText, flags: flags });
                                     setAllText(arr);
-
+                                    
                                     socket.emit('comment', { 'user': user, 'content': chatText });
                                 }
                                 elementRef.current.scrollIntoView();

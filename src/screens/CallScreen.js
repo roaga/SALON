@@ -78,7 +78,7 @@ const flagchecks = {
 
         const isOpinionWords = ["believe", "think", "feel", "opinion", "makes sense", "wonder", "weak", "strong", "looks", "seems", "tells", "motives", "character", "should", "ought", "seriously", "like", "love", "loves", "good", "bad", "great", "terrible"];
         const isSupportedWords = ["therefore", "so", "thus", "because", "since", "warrant", "then"];
-        const isClaimWords = ["known", "fact", "true", "false", "evident", "obvious", "clear", "consensus", "agreed", "evidence", "data", "certainty", "impossible"];
+        const isClaimWords = ["known", "know", "fact", "true", "false", "evident", "obvious", "clear", "consensus", "agreed", "evidence", "data", "certainty", "impossible"];
 
         text.trim().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").split(' ').forEach(word => {
             if (isOpinionWords.includes(word)) {flags.isOpinion = true;}

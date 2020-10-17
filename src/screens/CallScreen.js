@@ -87,15 +87,16 @@ export default function CallScreen() {
             if(transcript.trim().length > 0 && oldTranscript.trim() !== transcript.trim()) {
                 let arr = allText;
                 if (timeSinceSpoke > 1.5 || !hasSpoken) {
-                    let oldText = transcriptIndex >= 0 ? arr[transcriptIndex].text : "";
+                    let oldText = transcriptIndex >= 0 ? arr[transcriptIndex].text.split("\n")[1] : "";
                     arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""), flags: []});
                     setTranscriptIndex(arr.length - 1);
                     let flags = flagchecks.check(transcript);
                     arr[arr.length - 1].flags = flags;
                 } else {
                     let flags = flagchecks.check(transcript);
-                    let oldText = arr[transcriptIndex].text;
-                    arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.startsWith(oldText) ? transcript : oldText + " " + transcript;
+                    let oldText = arr[transcriptIndex].text.split("\n")[1];
+                    let newText = transcript.startsWith(oldText) ? transcript : oldText + " " + transcript;
+                    arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript;
                     arr[transcriptIndex].flags = flags;
                 }
                 setHasSpoken(true);

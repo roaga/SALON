@@ -23,13 +23,9 @@ var liveLog = []
 var liveAudioLog = []
 
 io.on("connection", (socket) => {
-    if (interval) {
-        clearInterval(interval);
-    }
-
-    interval = setInterval(() => {
+    setInterval(() => {
         socket.broadcast.emit('newcomment', liveLog);
-    }, 1000); // every second, it returns the socket data
+    }, 1500);
 
     socket.on("passUsername", function (data) {
         var isValidUser = true;
@@ -75,14 +71,17 @@ io.on("connection", (socket) => {
     });
 
     socket.on('disconnect', () => {
-        clearInterval(interval);
-        
         for (var i = 0; i < clients.length; i++) {
             if (clients[i].socket === socket) {
                 var user = clients[i].user;
                 clients.splice(i, 1);
+                console.log(clients.length);
                 break;
             }
+        }
+
+        if(clients.length === 0) {
+            clearInterval();
         }
 
         if(user !== undefined) {
@@ -90,8 +89,8 @@ io.on("connection", (socket) => {
             console.log(liveLog);
         }
 
-        for (var i = 0; i < userMap.length; i++) {
-            if (userMap[i].user === user) {
+        for (var a = 0; a < userMap.length; a++) {
+            if (userMap[a].user === user) {
                 userMap.splice(i, 1);
                 break;
             }

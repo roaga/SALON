@@ -53,14 +53,11 @@ export default function CallScreen() {
 
     // Set interval
     interval.current = useInterval(() => {
-        if (oldTranscript.trim().toLowerCase() === transcript.trim().toLowerCase()) {
+        if (oldTranscript.trim() === transcript.trim()) {
             setTimeSinceSpoke(timeSinceSpoke + 0.5);
         } else {
             setTimeSinceSpoke(0);
         }
-        console.log(timeSinceSpoke)
-        console.log("old" + escape(oldTranscript))
-        console.log("new" + escape(transcript))
 
         if(transcript.trim().length > 0) {
             let arr = allText;
@@ -71,7 +68,7 @@ export default function CallScreen() {
                 setTranscriptIndex(arr.length - 1);
                 let flags = flagchecks.check(transcript);
                 arr[arr.length - 1].flags = flags;
-            } else {
+            } else if (oldTranscript.trim() !== transcript.trim()) {
                 let flags = flagchecks.check(transcript);
                 arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript;
                 arr[transcriptIndex].flags = flags;

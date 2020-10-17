@@ -71,6 +71,8 @@ export default function CallScreen() {
                                     let arr = allText;
                                     arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText, flags: flags});
                                     setAllText(arr);
+
+                                    socket.emit('comment', chatText);
                                 }
                                 elementRef.current.scrollIntoView();
                                 setChatText("");

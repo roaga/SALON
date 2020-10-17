@@ -54,7 +54,6 @@ io.on("connection", (socket) => {
         }
         if(flag) {
             liveLog.push({'user': data.user, 'content': data.content});
-            socket.broadcast.emit('new comment', {'user': data.user, 'content': data.content});
         } 
     });
 
@@ -97,6 +96,6 @@ const getApiAndEmit = (socket) => {
             }
         }
     });
-
-    socket.emit("FromAPI", liveLog);
+    
+    socket.broadcast.emit('new comment', liveLog);
 };

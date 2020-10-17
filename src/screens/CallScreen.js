@@ -12,6 +12,7 @@ export default function CallScreen() {
     const [connected, setConnected] = useState(true);
     const [chatText, setChatText] = useState("");
     const [allText, setAllText] = useState([]);
+    var key = 0;
 
     const location = useLocation();
     const history = useHistory();
@@ -29,19 +30,27 @@ export default function CallScreen() {
 
     socket.on('new comment', data => {
         if(data !== undefined || data !== null) {
-            let flags = flagchecks.check(data.content);
             let arr = allText;
             var check = true;
 
-            for(var i = 0; i < arr.length; i++) {
-                if(arr[i].text === data.user.split("@")[0] + ": \n" + data.content) {
-                    check = false;
+            for(var i = data.length - 1; i > 0; i--) {
+                for(var j = 0; j < arr.length; j++) {
+                    if(arr[j].text === data[i].user.split("@")[0] + ": \n" + data[i].content) {
+                        check = false;
+                        break;
+                    }
                 }
-            }
-            
-            if(check) {
-                arr.push({ text: data.user.split("@")[0] + ": \n" + data.content, flags: flags });
-                console.log(data);
+                if(check) {
+                    let flags = flagchecks.check(data[i].content);
+                    arr.push({ text: data[i].user.split("@")[0] + ": \n" + data[i].content, flags: flags });
+
+                    setAllText(arr);
+                    setConnected(keyInc());
+
+                    console.log(allText);
+                } else {
+                    break;
+                }
             }
         }
     });
@@ -58,6 +67,11 @@ export default function CallScreen() {
         }, 1000);
     }
 
+    const keyInc = () => {
+        key += 1;
+        return key;
+    }
+
     return (
         <div className="container">
             {firebase.auth().currentUser != null ?
@@ -69,7 +83,7 @@ export default function CallScreen() {
                                 {allText.map(item => {
                                     let valid = !item.flags.isOpinion && (item.flags.isSupported || !item.flags.isClaim);
                                     return (
-                                        <div style={{ display: "flex", flexDirection: "row" }}>
+                                        <div key = {keyInc()} style={{ display: "flex", flexDirection: "row" }}>
                                             <div class="App-logo-spin" style={{ background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256, animation: valid ? "" : "App-logo-spin infinite 0.4s alternate linear" }}>
                                                 <h4 style={{ margin: 4 }}>{item.flags.isOpinion ? "Is this an opinion?" : ""}</h4>
                                                 <h4 style={{ margin: 4 }}>{item.flags.isSupported || !(item.flags.isOpinion || item.flags.isClaim) ? "" : "Is this unsupported?"}</h4>

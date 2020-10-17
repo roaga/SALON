@@ -6,7 +6,7 @@ const flagchecks = {
 
         var sentences = text.split('.');
 
-        const flags = ["believe", "think", "know"];
+        const flags = ["believe", "think", "know", "incorrect", "correct"];
 
         sentences.forEach(sentence => {
             sentence = sentence.split(' ');

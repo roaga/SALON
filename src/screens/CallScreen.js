@@ -10,7 +10,7 @@ import {colors} from '../App.js'
 export default function CallScreen() {
     const [connected, setConnected] = useState(true);
     const [chatText, setChatText] = useState("");
-    const [allText, setAllText] = useState("alltext");
+    const [allText, setAllText] = useState([]);
 
     const location = useLocation();
     const topicName = location.pathname.split("/")[2];
@@ -24,10 +24,18 @@ export default function CallScreen() {
                     <h1>Discussion on {topicName}</h1>
                     {connected ? 
                         <div style={{position: "absolute", right: 0, top: 200, width: "50%", height: "65%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
-                            <h4 style={{margin: 32, whiteSpace: "pre-line", paddingBottom: "15%"}}>{allText}</h4>
+                            <div style={{paddingBottom: "15%"}}>
+                                {allText.map(text => {
+                                    return (
+                                        <h4 style={{marginLeft: 32, marginRight: 32, whiteSpace: "pre-line"}}>{text}</h4>
+                                    );
+                                })}
+                            </div>
                             <form onSubmit={(e) => {
                                 if (chatText.length > 0) {
-                                    setAllText(allText + "\n\n" + chatText);
+                                    let arr = allText;
+                                    arr.push(firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText);
+                                    setAllText(arr);
                                 }
                                 elementRef.current.scrollIntoView();
                                 setChatText("");

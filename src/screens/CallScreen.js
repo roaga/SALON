@@ -29,7 +29,7 @@ export default function CallScreen() {
                                     let valid = !item.flags.isOpinion && item.flags.isSupported;
                                     return (
                                         <div style={{display: "flex", flexDirection: "row"}}>
-                                            <div style={{background: valid ? colors.washed : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: valid ? "0" : "0px 2px 20px grey", width: 256}}>
+                                            <div style={{background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256}}>
                                                 <h4 style={{margin: 4}}>{item.flags.isOpinion ? "Is this an opinion?" : ""}</h4>
                                                 <h4 style={{margin: 4}}>{item.flags.isSupported ? "" : "Is this unsupported?"}</h4>
                                                 <h4 style={{margin: 4}}>{item.flags.isClaim ? "Is the evidence factual?" : ""}</h4>

@@ -32,7 +32,7 @@ io.on("connection", (socket) => {
 
     socket.on("passUsername", function (data) {
         var isValidUser = true;
-        var tempDict = { 'user': data, 'transcript': "", 'audio': 0 };
+        var tempDict = { 'user': data, 'transcript': [], 'audio': 0 };
         for (var i = 0; i < userMap.length; i++) {
             if (userMap[i].user === data) {
                 isValidUser = false;
@@ -46,13 +46,21 @@ io.on("connection", (socket) => {
     });
 
     socket.on('comment', function (data) {
-        liveLog.push(data);
+        var flag = true;
+        for(var i = 0; i < liveLog.length; i++) {
+            if(liveLog[i].user === data.user && liveLog[i].content === data.content) {
+                flag = false;
+            }
+        }
+        if(flag) {
+            liveLog.push({'user': data.user, 'content': data.content});
+            socket.broadcast.emit('new comment', {'user': data.user, 'content': data.content});
+        } 
     });
 
     socket.on('disconnect', () => {
-        console.log("Client disconnected");
         clearInterval(interval);
-
+        
         for (var i = 0; i < clients.length; i++) {
             if (clients[i].socket === socket) {
                 var user = clients[i].user;
@@ -61,15 +69,17 @@ io.on("connection", (socket) => {
             }
         }
 
+        if(user !== undefined) {
+            console.log(user + " disconnected");
+            console.log(liveLog);
+        }
+
         for (var i = 0; i < userMap.length; i++) {
             if (userMap[i].user === user) {
                 userMap.splice(i, 1);
                 break;
             }
         }
-
-        console.log(userMap);
-        console.log(liveLog);
     });
 });
 
@@ -78,15 +88,15 @@ const getApiAndEmit = (socket) => {
 
         for (var i = 0; i < userMap.length; i++) {
             if ((userMap[i].user === data.user)) {
-                if (!(userMap[i].transcript === data.transcript)) {
+                if (data.transcript !== "") {
                     liveLog.push(data.transcript);
-                    userMap[i].transcript = data.transcript;
-                }
+                    userMap[i].transcript.push(data.transcript);
+                }   
                 userMap[i].audio = data.audioBLOB;
                 break;
             }
         }
-
-        return liveLog;
     });
+
+    socket.emit("FromAPI", liveLog);
 };

@@ -38,7 +38,7 @@ export default function CallScreen() {
     }
 
     const editComment = (i, c) => {
-        socket.emit('editcomment', {'content': c, 'index': i});
+        socket.emit('editcomment', {'index': i, 'content': c});
         console.log("emitted");
     }
 
@@ -62,6 +62,15 @@ export default function CallScreen() {
                 let flags = flagchecks.check(data[i].content);
                 arr.push({text: data[i].content, flags: flags});
             }
+
+            for(var i = 0; i < data.length; i++) {
+                if(arr[i].content !== data[i].content) {
+                    let flags = flagchecks.check(data[i].content);
+                    arr[i] = {text: data[i].content, flags: flags};
+                }
+            }
+            console.log(arr);
+
             setAllText(arr);
         });
     }, []);

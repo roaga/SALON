@@ -26,7 +26,6 @@ io.on('connection', (socket) => {
     }, 1000);
 
     socket.on("passUsername", function (data) {
-        var isValidUser = true;
         var tempDict = { 'user': data, 'transcript': []};
         console.log("User " + data + " has joined");
         userMap.push(tempDict);

@@ -33,12 +33,12 @@ function TopicCard(props) {
     const history = useHistory();
 
     return (
-        <div class="topic-card">
+        <div className="topic-card">
             <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between"}}>
-                <h2 class="link" onClick={() => history.push("/topicview/" + props.topic)}>{props.topic}</h2>
+                <h2 className="link" onClick={() => history.push("/topicview/" + props.topic)}>{props.topic}</h2>
                 <div style={{width: "20%", flexDirection: "row", display: "flex", padding: 8, justifyContent: "space-evenly"}}>
-                    <IoMdBook class="menu-button" size={28} style={{alignSelf: "center", color: colors.primary, borderRadius: 10, padding: 8}} onClick={() => history.push("/topicview/" + props.topic)}/>
-                    <IoMdCall class="menu-button" size={28} style={{alignSelf: "center", color: colors.primary, borderRadius: 10, padding: 8}} onClick={() => history.push("/callscreen/" + props.topic)}/>
+                    <IoMdBook className="menu-button" size={28} style={{alignSelf: "center", color: colors.primary, borderRadius: 10, padding: 8}} onClick={() => history.push("/topicview/" + props.topic)}/>
+                    <IoMdCall className="menu-button" size={28} style={{alignSelf: "center", color: colors.primary, borderRadius: 10, padding: 8}} onClick={() => history.push("/callscreen/" + props.topic)}/>
                 </div>
             </div>
         </div>

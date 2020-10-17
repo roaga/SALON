@@ -20,6 +20,7 @@ let interval;
 var userMap = []
 var clients = []
 var liveLog = []
+var liveAudioLog = []
 
 io.on("connection", (socket) => {
     if (interval) {
@@ -57,6 +58,23 @@ io.on("connection", (socket) => {
         } 
     });
 
+    socket.on('transcript data', function (data) {
+        for (var i = 0; i < userMap.length; i++) {
+            if ((userMap[i].user === data.user)) {
+                if (data.transcript !== "") {
+                    liveLog.push({user: data.user, content: data.transcript});
+                    userMap[i].transcript.push(data.transcript);
+                }   
+                userMap[i].audio = data.audioBLOB;
+                break;
+            }
+        }
+    });
+
+    socket.on('get audio', function(data) {
+        liveAudioLog.push({user: data.user, audioData: data.audioData})
+    });
+
     socket.on('disconnect', () => {
         clearInterval(interval);
         
@@ -83,19 +101,5 @@ io.on("connection", (socket) => {
 });
 
 const getApiAndEmit = (socket) => {
-    socket.on('transcript data', function (data) {
-
-        for (var i = 0; i < userMap.length; i++) {
-            if ((userMap[i].user === data.user)) {
-                if (data.transcript !== "") {
-                    liveLog.push(data.transcript);
-                    userMap[i].transcript.push(data.transcript);
-                }   
-                userMap[i].audio = data.audioBLOB;
-                break;
-            }
-        }
-    });
-    
     socket.broadcast.emit('new comment', liveLog);
 };

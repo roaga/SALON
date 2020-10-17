@@ -22,6 +22,7 @@ export default function CallScreen() {
     const [audioBLOB, setAudioBLOB] = useState(2)
     const [transcript, setTranscript] = useState("");
     const serverPort = 3001;
+
     const endCall = () => {
         history.push('/topicview/' + topicName);
     }
@@ -60,11 +61,21 @@ export default function CallScreen() {
         socket.emit('passUsername', user.email);
     }
 
-    if (user != null) {
-        var fulldata = { 'user': user.email, 'transcript': transcript, 'audioBLOB': audioBLOB };
-        setInterval(() => {
-            socket.emit('transcript data', fulldata);
+    const addTrancsript = (transcriptData) => {
+        var fulldata = { 'user': user.email, 'transcript': transcriptData, 'audioBLOB': audioBLOB };
+        socket.emit('transcript data', fulldata);
+    }
+
+    var interval;
+
+    const sendAudio = (audioBinData) => {
+        interval = setInterval(() => {
+            socket.emit('get audio', {'user': user.email, 'audioData': audioBinData});
         }, 1000);
+    }
+
+    const endAudio = () => {
+        clearInterval(interval);
     }
 
     const keyInc = () => {

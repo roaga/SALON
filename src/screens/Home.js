@@ -6,8 +6,8 @@ import '../App.css';
 export default function Home() {
     return (
         <div className="container">
-            <h1 style={{fontSize: 72}}>Where You<br/>Understand<br/>the Issues</h1>
-            <h1>A public debate platform<br/>that transcribes and analyzes<br/>both sides objectively</h1>
+            <h1 style={{fontSize: 72}}>Where Progress is Made</h1>
+            <h1>Objectively encouraging debate on the most important issues</h1>
         </div>
     );
 }

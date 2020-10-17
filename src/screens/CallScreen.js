@@ -32,13 +32,15 @@ export default function CallScreen() {
     const serverPort = 3001;
 
     const endCall = () => {
-        firebase.firestore().collection('posts').add({
-            topic: topicName,
-            users: users,
-            timestamp: Date.now(),
-            body: allText,
-            title: topicName + " - " + (new Date).toString().split(' ').splice(0, 4).join(' ')
-        });
+        if (allText.length > 0) {
+            firebase.firestore().collection('posts').add({
+                topic: topicName,
+                users: users,
+                timestamp: Date.now(),
+                body: allText,
+                title: topicName + " - " + (new Date).toString().split(' ').splice(0, 4).join(' ')
+            });
+        }
         history.push('/topicview/' + topicName);
     }
 

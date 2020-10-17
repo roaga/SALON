@@ -29,10 +29,16 @@ export default function CallScreen() {
     const elementRef = useRef();
 
     const [audioBLOB, setAudioBLOB] = useState(2)
-    const [transcript, setTranscript] = useState("");
     const serverPort = 3001;
 
     const endCall = () => {
+        firebase.firestore().collection('posts').add({
+            topic: topicName,
+            users: users,
+            timestamp: Date.now(),
+            body: allText,
+            title: topicName + " - " + (new Date).toString().split(' ').splice(0, 4).join(' ')
+        });
         history.push('/topicview/' + topicName);
     }
 
@@ -59,102 +65,110 @@ export default function CallScreen() {
 
     // Set interval
     interval.current = useInterval(() => {
-        if (oldTranscript.trim() === transcript.trim()) {
-            setTimeSinceSpoke(timeSinceSpoke + 0.5);
+        if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
+            return <h1>This browser is not supported.<br/>We recommend Google Chrome.</h1>
         } else {
-            setTimeSinceSpoke(0);
-        }
-
-        if(transcript.trim().length > 0) {
-            let arr = allText;
-            if (timeSinceSpoke > 2 || !hasSpoken) {
-                resetTranscript();
-                setHasSpoken(true);
-                arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript, flags: []});
-                setTranscriptIndex(arr.length - 1);
-                let flags = flagchecks.check(transcript);
-                arr[arr.length - 1].flags = flags;
-            } else if (oldTranscript.trim() !== transcript.trim()) {
-                let flags = flagchecks.check(transcript);
-                arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript;
-                arr[transcriptIndex].flags = flags;
+            SpeechRecognition.startListening({continuous: true});
+        
+            if (oldTranscript.trim() === transcript.trim()) {
+                setTimeSinceSpoke(timeSinceSpoke + 0.5);
+            } else {
                 setTimeSinceSpoke(0);
-                setOldTranscript(transcript);
             }
-            setAllText(arr);
-        }
-        setOldTranscript(transcript);
-    }, 1000);
 
-    if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
-        return <h1>This browser is not supported.<br/>We recommend Google Chrome.</h1>
-    } else {
-        SpeechRecognition.startListening({continuous: true});
-    }
-
-    socket.on('new comment', data => {
-        if(data !== undefined || data !== null) {
-            let arr = allText;
-            var check = true;
-
-            for(var i = data.length - 1; i > 0; i--) {
-                for(var j = 0; j < arr.length; j++) {
-                    if(arr[j].text === data[i].user.split("@")[0] + ": \n" + data[i].content) {
-                        check = false;
-                        break;
-                    }
+            if (timeSinceSpoke >= 1.5 && oldTranscript.trim() === transcript.trim() && hasSpoken) {
+                if (transcript.length > 0) {
+                    resetTranscript();
                 }
-                if(check) {
-                    let flags = flagchecks.check(data[i].content);
-                    arr.push({ text: data[i].user.split("@")[0] + ": \n" + data[i].content, flags: flags });
-
-                    setAllText(arr);
-                    setConnected(keyInc());
-
-                    console.log(allText);
+                setOldTranscript("");
+            }
+            if(transcript.trim().length > 0 && oldTranscript.trim() !== transcript.trim()) {
+                let arr = allText;
+                if (timeSinceSpoke > 1.5 || !hasSpoken) {
+                    let oldText = transcriptIndex >= 0 ? arr[transcriptIndex].text : "";
+                    arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""), flags: []});
+                    setTranscriptIndex(arr.length - 1);
+                    let flags = flagchecks.check(transcript);
+                    arr[arr.length - 1].flags = flags;
                 } else {
-                    break;
+                    let flags = flagchecks.check(transcript);
+                    let oldText = arr[transcriptIndex].text;
+                    arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.startsWith(oldText) ? transcript : oldText + " " + transcript;
+                    arr[transcriptIndex].flags = flags;
                 }
-            }
+                setHasSpoken(true);
+                setAllText(arr);
+                setOldTranscript(transcript);
+            } 
         }
-    });
+    }, 500);
+
+    // socket.on('new comment', data => {
+    //     if(data !== undefined || data !== null) {
+    //         let arr = allText;
+    //         var check = true;
+
+    //         for(var i = data.length - 1; i > 0; i--) {
+    //             for(var j = 0; j < arr.length; j++) {
+    //                 if(arr[j].text === data[i].user.split("@")[0] + ": \n" + data[i].content) {
+    //                     check = false;
+    //                     break;
+    //                 }
+    //             }
+    //             if(check) {
+    //                 let flags = flagchecks.check(data[i].content);
+    //                 arr.push({ text: data[i].user.split("@")[0] + ": \n" + data[i].content, flags: flags });
+
+    //                 setAllText(arr);
+    //                 setConnected(keyInc());
+
+    //                 console.log(allText);
+    //             } else {
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // });
 
     var user = firebase.auth().currentUser
 
-    if (user != null) {
-        socket.emit('passUsername', user.email);
-    }
+    // if (user != null) {
+    //     socket.emit('passUsername', user.email);
+    // }
 
-    const addTrancsript = (transcriptData) => {
-        var fulldata = {'user': user.email, 'transcript': transcriptData};
-        socket.emit('transcript data', fulldata);
-    }
+    // const addTrancsript = (transcriptData) => {
+    //     var fulldata = {'user': user.email, 'transcript': transcriptData};
+    //     socket.emit('transcript data', fulldata);
+    // }
 
-    var interval;
+    // var interval;
 
-    const sendAudio = (audioBinData) => {
-        interval = setInterval(() => {
-            socket.emit('get audio', {'user': user.email, 'audioData': audioBinData});
-        }, 1000);
-    }
+    // const sendAudio = (audioBinData) => {
+    //     interval = setInterval(() => {
+    //         socket.emit('get audio', {'user': user.email, 'audioData': audioBinData});
+    //     }, 1000);
+    // }
 
-    const endAudio = () => {
-        clearInterval(interval);
-    }
+    // const endAudio = () => {
+    //     clearInterval(interval);
+    // }
 
-    const keyInc = () => {
-        key += 1;
-        return key;
-    }
+    // const keyInc = () => {
+    //     key += 1;
+    //     return key;
+    // }
 
     return (
         <div className="container">
             {firebase.auth().currentUser != null ?
                 <div style={{width: "100%", height: 750, minHeight: 750, overflowY: "hidden"}}>
                     <h1>Discussion on {topicName}</h1>
+                    <div style={{alignItems: "center", justifyContent: "center", display: "flex"}}>
+                        <IoMdCloseCircle class="menu-button" size={32} color={colors.primary} style={{alignSelf: "center"}} onClick={() => endCall()}/>
+                    </div>
                     {connected ? 
                         <div>
-                            <div style={{position: "absolute", right: 0, top: 200, width: "50%", height: "65%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
+                            <div style={{position: "absolute", right: 0, top: 250, width: "50%", height: "60%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
                                 <div style={{paddingBottom: "20%"}}>
                                     {allText.map(item => {
                                         let valid = !item.flags.isOpinion && (item.flags.isSupported || !item.flags.isClaim);
@@ -177,7 +191,7 @@ export default function CallScreen() {
                                         arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText, flags: flags});
                                         setAllText(arr);
 
-                                        socket.emit('comment', { 'user': user, 'content': chatText });
+                                        // socket.emit('comment', { 'user': user, 'content': chatText });
                                     }
                                     elementRef.current.scrollIntoView();
                                     setChatText("");
@@ -187,9 +201,9 @@ export default function CallScreen() {
                                 </form>
                                 <div ref={elementRef} style={{width: 1}}></div>
                             </div>
-                            <div style={{display: "flex", flexDirection: "column", marginTop: 64}}>
+                            <div style={{display: "flex", flexDirection: "column", marginTop: 16}}>
                                 {users.map(user => {
-                                    let speaking = timeSinceSpoke < 1;
+                                    let speaking = timeSinceSpoke < 1.5;
                                     return (
                                         <div style={{background: colors.primary, borderRadius: 10, boxShadow: "0px 2px 20px grey", width: "20%", height: "20%", padding: 64, margin: 64, justifyContent: "space-evenly", textAlign: "center", animation: speaking ? "App-logo-spin infinite 0.4s alternate ease-in-out" : ""}}>
                                             <h2>{user.split("@")[0]}</h2>

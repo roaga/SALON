@@ -56,18 +56,10 @@ export default function Account(props) {
     }
 
     return (
-        <div className="container">
-            {loggedIn ? 
-                <h1>Your Account</h1> 
-            : 
-                <h1>{onLoginPage ? "Log In" : "Sign Up"}</h1>
-            }
-            {loggedIn ? 
-                <form onSubmit={(e) => signOutUser(e)} style={{alignItems: "center", justifyContent: "center", display: "flex"}}>
-                    <input type="submit" value="Sign Out"/>
-                </form>
-                : 
-                <div style={{marginLeft: 32}}>
+        <div className="container" style={{backgroundImage: 'url(' + require('../cool-background-1.svg') + ')', backgroundSize: "cover"}}>
+            {!loggedIn ? 
+                <div style={{backgroundColor: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", padding: 16, width: "50%", marginLeft: "25%"}}>
+                    <h1>{onLoginPage ? "Log In" : "Sign Up"}</h1>
                     <form onSubmit={(e) => handleSignup(e)} style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
                         <h5 style={{color: colors.dark, height: 16}}>{message}</h5> 
 
@@ -88,6 +80,13 @@ export default function Account(props) {
                     {onLoginPage ?
                         <h6 style={{color: colors.dark, cursor: "pointer", textAlign: "center"}} onClick={() => resetPassword()}>Forgot your password?</h6>
                     : null}
+                </div>
+            :
+                <div style={{backgroundColor: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", padding: 16, width: "50%", marginLeft: "25%"}}>
+                    <h1>Your Account</h1> 
+                    <form onSubmit={(e) => signOutUser(e)} style={{alignItems: "center", justifyContent: "center", display: "flex"}}>
+                        <input type="submit" value="Sign Out"/>
+                    </form>
                 </div>
             }
         </div>

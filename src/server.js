@@ -5,14 +5,10 @@ const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-const port = process.env.PORT || 3010
-
-app.get('/', (req, res) => {
-    res.send("Hello");
-});
+const port = process.env.PORT || 2050
 
 server.listen(port, () => {
-    console.log('listening on port 3010');
+    console.log('listening on port 2050');
 });
 
 let interval;
@@ -22,36 +18,23 @@ var clients = []
 var liveLog = []
 var liveAudioLog = []
 
-io.on("connection", (socket) => {
-    setInterval(() => {
-        socket.broadcast.emit('newcomment', liveLog);
-    }, 1500);
+io.sockets.setMaxListeners(1);
+
+io.on('connection', (socket) => {
+    interval = setInterval(() => {
+        socket.emit('newcomment', liveLog);
+    }, 1000);
 
     socket.on("passUsername", function (data) {
         var isValidUser = true;
         var tempDict = { 'user': data, 'transcript': []};
-        for (var i = 0; i < userMap.length; i++) {
-            if (userMap[i].user === data) {
-                isValidUser = false;
-            }
-        }
-        if (isValidUser) {
-            console.log("User " + data + " has joined");
-            userMap.push(tempDict);
-            clients.push({'socket': socket, 'user': data });
-        }
+        console.log("User " + data + " has joined");
+        userMap.push(tempDict);
+        clients.push({'socket': socket, 'user': data });
     });
 
     socket.on('comment', function (data) {
-        var flag = true;
-        for(var i = 0; i < liveLog.length; i++) {
-            if(liveLog[i].user === data.user && liveLog[i].content === data.content) {
-                flag = false;
-            }
-        }
-        if(flag) {
-            liveLog.push({'user': data.user, 'content': data.content});
-        } 
+        liveLog.push({'user': data.user, 'content': data.content});
     });
 
     socket.on('transcript data', function (data) {
@@ -81,7 +64,7 @@ io.on("connection", (socket) => {
         }
 
         if(clients.length === 0) {
-            clearInterval();
+            clearInterval(interval);
         }
 
         if(user !== undefined) {

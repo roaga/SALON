@@ -1,6 +1,6 @@
-import React, {useState, useEffect, useRef, useCallback, Fragment,} from 'react';
+import React, { useState, useEffect, useRef, useCallback, Fragment, } from 'react';
 import socketIOClient from 'socket.io-client'
-import {BrowserRouter as Router, Switch, Route, useHistory, useLocation} from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, useHistory, useLocation } from "react-router-dom";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import * as firebase from 'firebase'
 
@@ -8,6 +8,9 @@ import { IoMdCall, IoMdBook, IoMdCloseCircle } from "react-icons/io";
 
 import '../App.css';
 import { colors } from '../App.js'
+
+const port = 'http://localhost:2050';
+const socket = socketIOClient(port);
 
 export default function CallScreen() {
     const [connected, setConnected] = useState(true);
@@ -19,6 +22,7 @@ export default function CallScreen() {
     const [timeSinceSpoke, setTimeSinceSpoke] = useState(0);
     const [hasSpoken, setHasSpoken] = useState(false);
     const [users, setUsers] = useState(["ro.agarwal@hotmail.com", "arjun11verma@gmail.com"]);
+    
     var key = 0;
 
     const interval = useRef(undefined);
@@ -28,8 +32,10 @@ export default function CallScreen() {
     const topicName = location.pathname.split("/")[2];
     const elementRef = useRef();
 
-    const [audioBLOB, setAudioBLOB] = useState(2)
-    const serverPort = 3001;
+    const addComment = (u, c) => {
+        socket.emit('comment', { 'user': u, 'content': c });
+        console.log("emitted");
+    }
 
     const endCall = () => {
         if (allText.length > 0) {
@@ -38,40 +44,51 @@ export default function CallScreen() {
                 users: users,
                 timestamp: Date.now(),
                 body: allText,
-                title: topicName + " - " + (new Date).toString().split(' ').splice(0, 4).join(' ')
+                title: topicName + " - " + (new Date()).toString().split(' ').splice(0, 4).join(' ')
             });
         }
         history.push('/topicview/' + topicName);
     }
 
+    useEffect( () => {
+        socket.on('newcomment', (data) => {
+            var arr = allText;
+            for(var i = arr.length; i < data.length; i++) {
+                let flags = flagchecks.check(data[i].content);
+                arr.push({text: data[i].content, flags: flags});
+            }
+            setAllText(arr);
+        });
+    }, []);
+
     //Custom hook
     function useInterval(callback, delay) {
         const savedCallback = useRef();
-      
+
         // Remember the latest callback.
         useEffect(() => {
-          savedCallback.current = callback;
+            savedCallback.current = callback;
         }, [callback]);
-      
+
         // Set up the interval.
         useEffect(() => {
-          function tick() {
-            savedCallback.current();
-          }
-          if (delay !== null) {
-            let id = setInterval(tick, delay);
-            return () => clearInterval(id);
-          }
+            function tick() {
+                savedCallback.current();
+            }
+            if (delay !== null) {
+                let id = setInterval(tick, delay);
+                return () => clearInterval(id);
+            }
         }, [delay]);
     }
 
     // Set interval
     interval.current = useInterval(() => {
         if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
-            return <h1>This browser is not supported.<br/>We recommend Google Chrome.</h1>
+            return <h1>This browser is not supported.<br />We recommend Google Chrome.</h1>
         } else {
-            SpeechRecognition.startListening({continuous: true});
-        
+            SpeechRecognition.startListening({ continuous: true });
+
             if (oldTranscript.trim() === transcript.trim()) {
                 setTimeSinceSpoke(timeSinceSpoke + 0.5);
             } else {
@@ -84,11 +101,11 @@ export default function CallScreen() {
                 }
                 setOldTranscript("");
             }
-            if(transcript.trim().length > 0 && oldTranscript.trim() !== transcript.trim()) {
+            if (transcript.trim().length > 0 && oldTranscript.trim() !== transcript.trim()) {
                 let arr = allText;
                 if (timeSinceSpoke > 1.5 || !hasSpoken) {
                     let oldText = transcriptIndex >= 0 ? arr[transcriptIndex].text : "";
-                    arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""), flags: []});
+                    arr.push({ text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""), flags: [] });
                     setTranscriptIndex(arr.length - 1);
                     let flags = flagchecks.check(transcript);
                     arr[arr.length - 1].flags = flags;
@@ -101,59 +118,24 @@ export default function CallScreen() {
                 setHasSpoken(true);
                 setAllText(arr);
                 setOldTranscript(transcript);
-            } 
+                elementRef.current.scrollIntoView();
+            }
         }
     }, 500);
 
-    // socket.on('new comment', data => {
-    //     if(data !== undefined || data !== null) {
-    //         let arr = allText;
-    //         var check = true;
+    var user = firebase.auth().currentUser;
 
-    //         for(var i = data.length - 1; i > 0; i--) {
-    //             for(var j = 0; j < arr.length; j++) {
-    //                 if(arr[j].text === data[i].user.split("@")[0] + ": \n" + data[i].content) {
-    //                     check = false;
-    //                     break;
-    //                 }
-    //             }
-    //             if(check) {
-    //                 let flags = flagchecks.check(data[i].content);
-    //                 arr.push({ text: data[i].user.split("@")[0] + ": \n" + data[i].content, flags: flags });
+    useEffect( () => {
+        if(user != null) {
+            socket.emit('passUsername', user.email);
+            console.log(user);
+            console.log(socket);
+        }
+    }, [socket, user]);
 
-    //                 setAllText(arr);
-    //                 setConnected(keyInc());
-
-    //                 console.log(allText);
-    //             } else {
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // });
-
-    var user = firebase.auth().currentUser
-
-    // if (user != null) {
-    //     socket.emit('passUsername', user.email);
-    // }
-
-    // const addTrancsript = (transcriptData) => {
-    //     var fulldata = {'user': user.email, 'transcript': transcriptData};
-    //     socket.emit('transcript data', fulldata);
-    // }
-
-    // var interval;
-
-    // const sendAudio = (audioBinData) => {
-    //     interval = setInterval(() => {
-    //         socket.emit('get audio', {'user': user.email, 'audioData': audioBinData});
-    //     }, 1000);
-    // }
-
-    // const endAudio = () => {
-    //     clearInterval(interval);
-    // }
+    /*
+    if 
+    }*/
 
     // const keyInc = () => {
     //     key += 1;
@@ -161,27 +143,27 @@ export default function CallScreen() {
     // }
 
     return (
-        <div className="container">
+        <div className="container" style={{ backgroundImage: 'url(' + require('../cool-background-2.svg') + ')', backgroundSize: "cover" }}>
             {firebase.auth().currentUser != null ?
-                <div style={{width: "100%", height: 750, minHeight: 750, overflowY: "hidden"}}>
-                    <h1>Discussion on {topicName}</h1>
-                    <div style={{alignItems: "center", justifyContent: "center", display: "flex"}}>
-                        <IoMdCloseCircle class="menu-button" size={32} color={colors.primary} style={{alignSelf: "center"}} onClick={() => endCall()}/>
+                <div style={{ width: "100%", height: 750, minHeight: 750, overflowY: "hidden" }}>
+                    <div style={{ alignItems: "center", justifyContent: "space-between", display: "flex", flexDirection: "row" }}>
+                        <IoMdCloseCircle class="menu-button" size={32} color={colors.primary} style={{ marginLeft: 64 }} onClick={() => endCall()} />
+                        <h1 style={{ textAlign: "right" }}>Discussion on {topicName}</h1>
                     </div>
-                    {connected ? 
+                    {connected ?
                         <div>
-                            <div style={{position: "absolute", right: 0, top: 250, width: "50%", height: "60%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
-                                <div style={{paddingBottom: "20%"}}>
+                            <div style={{ position: "absolute", right: 0, top: 250, width: "50%", height: "60%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll" }}>
+                                <div style={{ paddingBottom: "20%" }}>
                                     {allText.map(item => {
                                         let valid = !item.flags.isOpinion && (item.flags.isSupported || !item.flags.isClaim);
                                         return (
-                                            <div style={{display: "flex", flexDirection: "row"}}>
-                                                <div className="App-logo-spin" style={{background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256, minWidth: 256, animation: valid ? "" : "App-logo-spin infinite 0.4s alternate ease-in-out"}}>
-                                                    <h4 style={{margin: 4}}>{item.flags.isOpinion ? "Is this an opinion?" : ""}</h4>
-                                                    <h4 style={{margin: 4}}>{item.flags.isSupported || !(item.flags.isOpinion || item.flags.isClaim) ? "" : "Is this unsupported?"}</h4>
-                                                    <h4 style={{margin: 4}}>{item.flags.isClaim ? "Is the evidence factual?" : ""}</h4>
+                                            <div style={{ display: "flex", flexDirection: "row" }}>
+                                                <div className="App-logo-spin" style={{ background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256, minWidth: 256, animation: valid ? "" : "App-logo-spin infinite 0.4s alternate ease-in-out" }}>
+                                                    <h4 style={{ margin: 4 }}>{item.flags.isOpinion ? "Is this an opinion?" : ""}</h4>
+                                                    <h4 style={{ margin: 4 }}>{item.flags.isSupported || !(item.flags.isOpinion || item.flags.isClaim) ? "" : "Is this unsupported?"}</h4>
+                                                    <h4 style={{ margin: 4 }}>{item.flags.isClaim ? "Is the evidence factual?" : ""}</h4>
                                                 </div>
-                                                <h4 style={{marginLeft: 32, marginRight: 32, whiteSpace: "pre-line"}}>{item.text}</h4>
+                                                <h4 style={{ marginLeft: 32, marginRight: 32, whiteSpace: "pre-line" }}>{item.text}</h4>
                                             </div>
                                         );
                                     })}
@@ -190,24 +172,24 @@ export default function CallScreen() {
                                     if (chatText.trim().length > 0) {
                                         let flags = flagchecks.check(chatText);
                                         let arr = allText;
-                                        arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText, flags: flags});
+                                        arr.push({ text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText, flags: flags });
                                         setAllText(arr);
 
-                                        // socket.emit('comment', { 'user': user, 'content': chatText });
+                                        addComment(firebase.auth().currentUser.email, firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText);
                                     }
                                     elementRef.current.scrollIntoView();
                                     setChatText("");
                                     e.preventDefault();
-                                }} style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
-                                    <input placeholder="Send a message..." value={chatText} onChange={event => setChatText(event.target.value)} style={{width: "45%", position: "fixed", bottom: "15%"}}/>
+                                }} style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+                                    <input placeholder="Send a message..." value={chatText} onChange={event => setChatText(event.target.value)} style={{ width: "45%", position: "fixed", bottom: "15%" }} />
                                 </form>
-                                <div ref={elementRef} style={{width: 1}}></div>
+                                <div ref={elementRef}></div>
                             </div>
-                            <div style={{display: "flex", flexDirection: "column", marginTop: 16}}>
+                            <div style={{ display: "flex", flexDirection: "column", marginTop: 16 }}>
                                 {users.map(user => {
                                     let speaking = timeSinceSpoke < 1.5;
                                     return (
-                                        <div style={{background: colors.primary, borderRadius: 10, boxShadow: "0px 2px 20px grey", width: "20%", height: "20%", padding: 64, margin: 64, justifyContent: "space-evenly", textAlign: "center", animation: speaking ? "App-logo-spin infinite 0.4s alternate ease-in-out" : ""}}>
+                                        <div style={{ background: colors.primary, borderRadius: 10, boxShadow: "0px 2px 20px grey", width: "20%", height: "20%", padding: 64, margin: 64, justifyContent: "space-evenly", textAlign: "center", animation: speaking ? "App-logo-spin infinite 0.4s alternate ease-in-out" : "" }}>
                                             <h2>{user.split("@")[0]}</h2>
                                         </div>
                                     );

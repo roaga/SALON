@@ -9,14 +9,13 @@ import {colors} from '../App.js'
 
 const topics = ["Response to COVID-19", "Racial Justice", "Election 2020"];
 
-
-
 export default function Dashboard() {
     return (
         <div className="container">
             {firebase.auth().currentUser != null ?
                 <div style={{width: "100%", height: 680, minHeight: 680, overflowY: "scroll"}}>
                     <h1>Explore Topics</h1>
+                    <SearchBar/>
                     <div style={{display: "flex", flexDirection: "column", justifyContent:'center', alignItems:'center'}}>
                         {topics.map(topic => <TopicCard topic={topic}/>)}
                     </div>
@@ -44,4 +43,22 @@ function TopicCard(props) {
             </div>
         </div>
     )
+}
+
+function SearchBar(props) {
+    const [text, setText] = useState("");
+    const [results, setResults] = useState([]);
+    
+    useEffect(() => {
+        setResults(text.length > 0 ? topics.filter(topic => topic.toLowerCase().includes(text.toLowerCase())) : []);
+    }, [text]);
+
+    return (
+        <form onSubmit={(e) => e.preventDefault()} style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
+            <input placeholder="Search for topics..." value={text} onChange={event => setText(event.target.value)}/>
+            <div style={{position: "absolute", top: 250, background: "white", boxShadow: "0px 1px 10px grey", borderRadius: 10, width: "30%", overflowY: "scroll", maxHeight: 400, alignItems: "center", justifyContent: "center", display: "flex", flexDirection: "column"}}>
+                {results.map(result => <TopicCard topic={result} style={{width: "100%"}}/>)}
+            </div>
+        </form>
+    );
 }

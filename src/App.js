@@ -69,7 +69,7 @@ export default function App() {
 function NavBar() {
     return (
         <div style={{display: "flex", flexDirection: "row", boxShadow: "0px 2px 20px grey", borderBottomRightRadius: 10, borderBottomLeftRadius: 10}}>
-            <h1 style={{marginLeft: 64, color: colors.primary, marginTop: 8, width: 600}}>Project Name</h1>
+            <h1 style={{marginLeft: 64, color: colors.primary, marginTop: 8, width: 600}}>SALON</h1>
             <div style={{width: "100%", justifyContent: "flex-end", display: "flex"}}>
                 <div style={{width: "50%", flexDirection: "row", display: "flex", padding: 8, justifyContent: "space-evenly"}}>
                     <MenuButton path="/" pageName="Home"/>
@@ -83,8 +83,8 @@ function NavBar() {
 
 function Footer() {
     return (
-        <div style={{marginTop: 16, width: "100%", marginLeft: 64, alignItems: "center", justifyContent: "center", display: "flex", flexDirection: "column"}}>
-            <h4 style={{color: colors.secondary}}>Project Name</h4>
+        <div style={{marginTop: 16, width: "100%", alignItems: "center", justifyContent: "center", display: "flex", flexDirection: "column"}}>
+            <h4 style={{color: colors.secondary}}>SALON</h4>
             <h5 style={{color: colors.dark, marginTop: 0}}>&copy; 2020 Team Rojunthony @ HackGT 2020</h5>
         </div>
     );

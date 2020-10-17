@@ -121,7 +121,7 @@ export default function CallScreen() {
     } else {
         SpeechRecognition.startListening({ continuous: true });
     }
-    
+
     const keyInc = () => {
         key += 1;
         return key;

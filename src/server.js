@@ -5,14 +5,14 @@ const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-const port = process.env.PORT || 3001
+const port = process.env.PORT || 3010
 
 app.get('/', (req, res) => {
     res.send("Hello");
 });
 
 server.listen(port, () => {
-    console.log('listening on *:3001');
+    console.log('listening on port 3010');
 });
 
 let interval;
@@ -27,7 +27,9 @@ io.on("connection", (socket) => {
         clearInterval(interval);
     }
 
-    interval = setInterval(() => getApiAndEmit(socket), 1000); // every second, it returns the socket data
+    interval = setInterval(() => {
+        socket.broadcast.emit('newcomment', liveLog);
+    }, 1000); // every second, it returns the socket data
 
     socket.on("passUsername", function (data) {
         var isValidUser = true;
@@ -96,8 +98,3 @@ io.on("connection", (socket) => {
         }
     });
 });
-
-const getApiAndEmit = (socket) => {
-    socket.broadcast.emit('new comment', liveLog);
-    socket.broadcast.emit('listeningforaudio', liveAudioLog);  
-};

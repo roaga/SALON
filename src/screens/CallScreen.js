@@ -66,6 +66,8 @@ export default function CallScreen() {
     var prevInt = 0;
     interval.current = useInterval(() => {
         socket.once('newcomment', data => {
+            console.log("Anger");
+            
             let arr = allText;
             var check = true;
 
@@ -127,7 +129,7 @@ export default function CallScreen() {
         return key;
     }
 
-    return (
+     return (
         <div className="container">
             {firebase.auth().currentUser != null ?
                 <div style={{ width: "100%", height: 680, minHeight: 680, overflowY: "scroll" }}>

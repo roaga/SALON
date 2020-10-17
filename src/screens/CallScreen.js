@@ -17,6 +17,10 @@ export default function CallScreen() {
     const topicName = location.pathname.split("/")[2];
     const elementRef = useRef();
 
+    const endCall = () => {
+        history.push('/topicview/' + topicName);
+    }
+
 
     return (
         <div className="container">
@@ -26,9 +30,7 @@ export default function CallScreen() {
                     {connected ? 
                         <div>
                             <div style={{alignItems: "center", justifyContent: "center", display: "flex"}}>
-                                <IoMdCloseCircle class="menu-button" size={32} color={colors.primary} style={{alignSelf: "center"}} onClick={() => {
-                                    history.push('/topicview/' + topicName);
-                                }}/>
+                                <IoMdCloseCircle class="menu-button" size={32} color={colors.primary} style={{alignSelf: "center"}} onClick={() => endCall()}/>
                             </div>
                             <div style={{position: "absolute", right: 0, top: 250, width: "50%", height: "60%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
                                 <div style={{paddingBottom: "20%"}}>

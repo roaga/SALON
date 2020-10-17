@@ -25,16 +25,16 @@ export default function CallScreen() {
                     {connected ? 
                         <div style={{position: "absolute", right: 0, top: 200, width: "50%", height: "65%", background: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", overflowY: "scroll"}}>
                             <div style={{paddingBottom: "15%"}}>
-                                {allText.map(text => {
+                                {allText.map(item => {
                                     return (
-                                        <h4 style={{marginLeft: 32, marginRight: 32, whiteSpace: "pre-line"}}>{text}</h4>
+                                        <h4 style={{marginLeft: 32, marginRight: 32, whiteSpace: "pre-line"}}>{item.text}</h4>
                                     );
                                 })}
                             </div>
                             <form onSubmit={(e) => {
                                 if (chatText.length > 0) {
                                     let arr = allText;
-                                    arr.push(firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText);
+                                    arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText, flag: ""});
                                     setAllText(arr);
                                 }
                                 elementRef.current.scrollIntoView();

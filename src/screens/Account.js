@@ -58,17 +58,17 @@ export default function Account(props) {
     return (
         <div className="container">
             {loggedIn ? 
-                <h2>Your Account</h2> 
+                <h1>Your Account</h1> 
             : 
-                <h2>{onLoginPage ? "Log In" : "Sign Up"}</h2>
+                <h1>{onLoginPage ? "Log In" : "Sign Up"}</h1>
             }
             {loggedIn ? 
-                <form onSubmit={(e) => signOutUser(e)}>
+                <form onSubmit={(e) => signOutUser(e)} style={{alignItems: "center", justifyContent: "center", display: "flex"}}>
                     <input type="submit" value="Sign Out"/>
                 </form>
                 : 
                 <div style={{marginLeft: 32}}>
-                    <form onSubmit={(e) => handleSignup(e)} style={{display: "flex", flexDirection: "column"}}>
+                    <form onSubmit={(e) => handleSignup(e)} style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
                         <h5 style={{color: colors.dark, height: 16}}>{message}</h5> 
 
                         <h3>Email</h3>
@@ -81,12 +81,12 @@ export default function Account(props) {
                     </form>
 
                     {onLoginPage ?
-                        <h6 style={{color: colors.dark, cursor: "pointer"}} onClick={() => setOnLoginPage(false)}>New here? Sign up.</h6>
+                        <h6 style={{color: colors.dark, cursor: "pointer", textAlign: "center"}} onClick={() => setOnLoginPage(false)}>New here? Sign up.</h6>
                     :
-                        <h6 style={{color: colors.dark, cursor: "pointer"}} onClick={() => setOnLoginPage(true)}>Have an account? Log in.</h6>
+                        <h6 style={{color: colors.dark, cursor: "pointer", textAlign: "center"}} onClick={() => setOnLoginPage(true)}>Have an account? Log in.</h6>
                     }
                     {onLoginPage ?
-                        <h6 style={{color: colors.dark, cursor: "pointer"}} onClick={() => resetPassword()}>Forgot your password?</h6>
+                        <h6 style={{color: colors.dark, cursor: "pointer", textAlign: "center"}} onClick={() => resetPassword()}>Forgot your password?</h6>
                     : null}
                 </div>
             }

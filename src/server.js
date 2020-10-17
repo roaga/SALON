@@ -10,7 +10,7 @@ const port = process.env.PORT || 3001
 app.get('/', (req, res) => {
     res.send("Hello");
 });
-  
+
 server.listen(port, () => {
     console.log('listening on *:3001');
 });
@@ -19,74 +19,74 @@ let interval;
 
 var userMap = []
 var clients = []
+var liveLog = []
 
 io.on("connection", (socket) => {
-  if (interval) {
-    clearInterval(interval);
-  }
+    if (interval) {
+        clearInterval(interval);
+    }
 
-  clients.push(socket);
+    clients.push(socket);
 
-  interval = setInterval(() => getApiAndEmit(socket), 1000); // every second, it returns the socket data
+    interval = setInterval(() => getApiAndEmit(socket), 1000); // every second, it returns the socket data
 
-  socket.on("passUsername", function(data) {
+    socket.on("passUsername", function (data) {
         var isValidUser = true;
-        var tempDict = {'user': data, 'transcript': "", 'audio': 0};
-        for(var i = 0; i < userMap.length; i++) {
-            if(userMap[i].user === data) {
+        var tempDict = { 'user': data, 'transcript': "", 'audio': 0 };
+        for (var i = 0; i < userMap.length; i++) {
+            if (userMap[i].user === data) {
                 isValidUser = false;
             }
         }
-        if(isValidUser) {
+        if (isValidUser) {
             console.log("User " + data + " has joined");
             userMap.push(tempDict);
+            clients.push({ 'socket': socket, 'user': data });
         }
-  });
+    });
 
-  socket.on('disconnect', function(data) {
-    console.log("Client disconnected");
-    console.log(data);
+    socket.on('comment', function (data) {
+        liveLog.push(data);
+    });
 
-    clearInterval(interval);
-    console.log(userMap);
-  });
-});
+    socket.on('disconnect', () => {
+        console.log("Client disconnected");
+        clearInterval(interval);
 
-const getApiAndEmit = (socket) => {
-    socket.on('transcript data', function(data) {
-        for(var i = 0; i < userMap.length; i++) {
-            if((userMap[i].user === data.user)) {
-                userMap[i].transcript = data.transcript;
-                userMap[i].audio = data.audioBLOB;
+        for (var i = 0; i < clients.length; i++) {
+            if (clients[i].socket === socket) {
+                var user = clients[i].user;
+                clients.splice(i, 1);
+                break;
             }
         }
 
-        return userMap;
+        for (var i = 0; i < userMap.length; i++) {
+            if (userMap[i].user === user) {
+                userMap.splice(i, 1);
+                break;
+            }
+        }
+
+        console.log(userMap);
+        console.log(liveLog);
+    });
+});
+
+const getApiAndEmit = (socket) => {
+    socket.on('transcript data', function (data) {
+
+        for (var i = 0; i < userMap.length; i++) {
+            if ((userMap[i].user === data.user)) {
+                if (!(userMap[i].transcript === data.transcript)) {
+                    liveLog.push(data.transcript);
+                    userMap[i].transcript = data.transcript;
+                }
+                userMap[i].audio = data.audioBLOB;
+                break;
+            }
+        }
+
+        return liveLog;
     });
 };
-
-/*
-const serverPort = 3001;
-const [transcript, setTranscript] = useState("Transcript goes here");
-    const [audioBLOB, setAudioBLOB] = useState(2)
-
-    const socket = socketIOClient('http://localhost:' + serverPort);
-
-    socket.on("FromAPI", data => {
-        console.log(data);
-    });
-
-    var user = firebase.auth().currentUser
-    if(user != null) {
-        socket.emit('passUsername', user.email);
-    }
-
-    if(user != null) {
-        var fulldata = {'user': user.email, 'transcript': transcript, 'audioBLOB': audioBLOB};
-        setInterval(() => {
-            socket.emit('transcript data', fulldata);
-        }, 1000);
-    }
-
-    socket.emit('disconnect', "email");
-*/

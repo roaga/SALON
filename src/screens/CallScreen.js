@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef, useCallback, Fragment} from 'react';
+import socketIOClient from 'socket.io-client'
 import {BrowserRouter as Router, Switch, Route, useHistory, useLocation} from "react-router-dom";
 import * as firebase from 'firebase'
 
@@ -17,6 +18,27 @@ export default function CallScreen() {
     const topicName = location.pathname.split("/")[2];
     const elementRef = useRef();
 
+    const serverPort = 3001;
+    const [transcript, setTranscript] = useState("Transcript goes here");
+    const [audioBLOB, setAudioBLOB] = useState(2)
+
+    const socket = socketIOClient('http://localhost:' + serverPort);
+
+    socket.on("FromAPI", data => {
+        console.log(data);
+    });
+
+    var user = firebase.auth().currentUser
+    if(user != null) {
+        socket.emit('passUsername', user.email);
+    }
+
+    if(user != null) {
+        var fulldata = {'user': user.email, 'transcript': transcript, 'audioBLOB': audioBLOB};
+        setInterval(() => {
+            socket.emit('transcript data', fulldata);
+        }, 1000);
+    }
 
     return (
         <div className="container">
@@ -52,6 +74,8 @@ export default function CallScreen() {
                                         let arr = allText;
                                         arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + chatText, flags: flags});
                                         setAllText(arr);
+
+                                        socket.emit('comment', chatText);
                                     }
                                     elementRef.current.scrollIntoView();
                                     setChatText("");

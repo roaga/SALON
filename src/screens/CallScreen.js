@@ -28,7 +28,6 @@ export default function CallScreen() {
     const elementRef = useRef();
 
     const [audioBLOB, setAudioBLOB] = useState(2)
-    const [transcript, setTranscript] = useState("");
     const serverPort = 3001;
 
     const endCall = () => {
@@ -90,7 +89,7 @@ export default function CallScreen() {
     } else {
         SpeechRecognition.startListening({continuous: true});
     }
-
+    
     socket.on('new comment', data => {
         if(data !== undefined || data !== null) {
             let arr = allText;
@@ -129,16 +128,16 @@ export default function CallScreen() {
         socket.emit('transcript data', fulldata);
     }
 
-    var interval;
+    let intervalAudio;
 
     const sendAudio = (audioBinData) => {
-        interval = setInterval(() => {
+        intervalAudio = setInterval(() => {
             socket.emit('get audio', {'user': user.email, 'audioData': audioBinData});
         }, 1000);
     }
 
     const endAudio = () => {
-        clearInterval(interval);
+        clearInterval(intervalAudio);
     }
 
     const keyInc = () => {

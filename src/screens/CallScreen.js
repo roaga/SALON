@@ -41,8 +41,13 @@ export default function CallScreen() {
                 title: topicName + " - " + (new Date).toString().split(' ').splice(0, 4).join(' ')
             });
         }
+        SpeechRecognition.stopListening();
         history.push('/topicview/' + topicName);
     }
+
+    useEffect(() => {
+        return () => endCall();
+    }, []);
 
     //Custom hook
     function useInterval(callback, delay) {

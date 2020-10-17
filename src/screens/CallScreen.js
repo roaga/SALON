@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import React, {useState, useEffect, useRef, useCallback, Fragment,} from 'react';
 import socketIOClient from 'socket.io-client'
 import { BrowserRouter as Router, Switch, Route, useHistory, useLocation } from "react-router-dom";
+import {BrowserRouter as Router, Switch, Route, useHistory, useLocation} from "react-router-dom";
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import * as firebase from 'firebase'
 
 import { IoMdCall, IoMdBook, IoMdCloseCircle } from "react-icons/io";
@@ -12,23 +15,57 @@ export default function CallScreen() {
     const [connected, setConnected] = useState(true);
     const [chatText, setChatText] = useState("");
     const [allText, setAllText] = useState([]);
-    var key = 0;
+    const [started, setStarted] = useState(false);
+    const [oldTranscript, setOldTranscript] = useState("");
+    const [transcriptIndex, setTranscriptIndex] = useState(-1);
+    const [timeSinceSpoke, setTimeSinceSpoke] = useState(0);
+    const [hasSpoken, setHasSpoken] = useState(false);
 
+    const interval = useRef(undefined);
+    const { transcript, resetTranscript } = useSpeechRecognition();
     const location = useLocation();
     const history = useHistory();
     const topicName = location.pathname.split("/")[2];
     const elementRef = useRef();
 
     const [audioBLOB, setAudioBLOB] = useState(2)
-    const [transcript, setTranscript] = useState("");
+    const [transcript, setTranscript] = useState("Transcript goes here");
     const serverPort = 3001;
-
     const endCall = () => {
         history.push('/topicview/' + topicName);
     }
 
-    const socket = socketIOClient('http://localhost:' + serverPort);
+    //Custom hook
+    function useInterval(callback, delay) {
+        const savedCallback = useRef();
+      
+        // Remember the latest callback.
+        useEffect(() => {
+          savedCallback.current = callback;
+        }, [callback]);
+      
+        // Set up the interval.
+        useEffect(() => {
+          function tick() {
+            savedCallback.current();
+          }
+          if (delay !== null) {
+            let id = setInterval(tick, delay);
+            return () => clearInterval(id);
+          }
+        }, [delay]);
+    }
 
+    // Set interval
+    interval.current = useInterval(() => {
+        if (oldTranscript.trim().toLowerCase() === transcript.trim().toLowerCase()) {
+            setTimeSinceSpoke(timeSinceSpoke + 0.5);
+        } else {
+            setTimeSinceSpoke(0);
+        }
+        console.log(timeSinceSpoke)
+        console.log("old" + escape(oldTranscript))
+        console.log("new" + escape(transcript))
     socket.on('new comment', data => {
         if(data !== undefined || data !== null) {
             let arr = allText;
@@ -56,23 +93,31 @@ export default function CallScreen() {
         }
     });
 
-    var user = firebase.auth().currentUser
+        if(transcript.trim().length > 0) {
+            let arr = allText;
+            if (timeSinceSpoke > 2 || !hasSpoken) {
+                resetTranscript();
+                setHasSpoken(true);
+                arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript, flags: []});
+                setTranscriptIndex(arr.length - 1);
+                let flags = flagchecks.check(transcript);
+                arr[arr.length - 1].flags = flags;
+            } else {
+                let flags = flagchecks.check(transcript);
+                arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript;
+                arr[transcriptIndex].flags = flags;
+                setTimeSinceSpoke(0);
+                setOldTranscript(transcript);
+            }
+            setAllText(arr);
+        }
+        setOldTranscript(transcript);
+    }, 1000);
 
-    if (user != null) {
-        socket.emit('passUsername', user.email);
-    }
-
-    const addTrancsript = (transcriptData) => {
-        var fulldata = {'user': user.email, 'transcript': transcriptData};
-        socket.emit('transcript data', fulldata);
-    }
-
-    var interval;
-
-    const sendAudio = (audioBinData) => {
-        interval = setInterval(() => {
-            socket.emit('get audio', {'user': user.email, 'audioData': audioBinData});
-        }, 1000);
+    if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
+        return <h1>This browser is not supported.<br/>We recommend Google Chrome.</h1>
+    } else {
+        SpeechRecognition.startListening({continuous: true});
     }
 
     const endAudio = () => {
@@ -95,11 +140,11 @@ export default function CallScreen() {
                                 {allText.map(item => {
                                     let valid = !item.flags.isOpinion && (item.flags.isSupported || !item.flags.isClaim);
                                     return (
-                                        <div key = {keyInc()} style={{ display: "flex", flexDirection: "row" }}>
-                                            <div class="App-logo-spin" style={{ background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256, animation: valid ? "" : "App-logo-spin infinite 0.4s alternate linear" }}>
-                                                <h4 style={{ margin: 4 }}>{item.flags.isOpinion ? "Is this an opinion?" : ""}</h4>
-                                                <h4 style={{ margin: 4 }}>{item.flags.isSupported || !(item.flags.isOpinion || item.flags.isClaim) ? "" : "Is this unsupported?"}</h4>
-                                                <h4 style={{ margin: 4 }}>{item.flags.isClaim ? "Is the evidence factual?" : ""}</h4>
+                                        <div style={{display: "flex", flexDirection: "row"}}>
+                                            <div className="App-logo-spin" style={{background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256, minWidth: 256, animation: valid ? "" : "App-logo-spin infinite 0.4s alternate linear"}}>
+                                                <h4 style={{margin: 4}}>{item.flags.isOpinion ? "Is this an opinion?" : ""}</h4>
+                                                <h4 style={{margin: 4}}>{item.flags.isSupported || !(item.flags.isOpinion || item.flags.isClaim) ? "" : "Is this unsupported?"}</h4>
+                                                <h4 style={{margin: 4}}>{item.flags.isClaim ? "Is the evidence factual?" : ""}</h4>
                                             </div>
                                             <h4 style={{ marginLeft: 32, marginRight: 32, whiteSpace: "pre-line" }}>{item.text}</h4>
                                         </div>
@@ -144,7 +189,7 @@ const flagchecks = {
 
         const isOpinionWords = ["believe", "think", "feel", "opinion", "makes sense", "wonder", "weak", "strong", "looks", "seems", "tells", "motives", "character", "should", "ought", "seriously", "like", "love", "loves", "good", "bad", "great", "terrible"];
         const isSupportedWords = ["therefore", "so", "thus", "because", "since", "warrant", "then"];
-        const isClaimWords = ["known", "know", "fact", "true", "false", "evident", "obvious", "clear", "consensus", "agreed", "evidence", "data", "certainty", "impossible"];
+        const isClaimWords = ["known", "know", "fact", "true", "false", "evident", "obvious", "clear", "consensus", "agreed", "evidence", "data", "certainty", "impossible", "right", "wrong"];
 
         text.trim().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").split(' ').forEach(word => {
             if (isOpinionWords.includes(word)) { flags.isOpinion = true; }

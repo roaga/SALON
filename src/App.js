@@ -85,7 +85,7 @@ function Footer() {
     return (
         <div style={{marginTop: 16, width: "100%", alignItems: "center", justifyContent: "center", display: "flex", flexDirection: "column"}}>
             <h4 style={{color: colors.secondary}}>SALON</h4>
-            <h5 style={{color: colors.dark, marginTop: 0}}>&copy; 2020 Team Rojunthony @ HackGT 2020</h5>
+            <h5 style={{color: colors.dark, marginTop: 0}}>&copy; 2020 Rohan Agarwal, Arjun Verma, Anthony Wong</h5>
         </div>
     );
 }

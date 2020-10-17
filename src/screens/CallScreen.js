@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
-import React, {useState, useEffect, useRef, useCallback, Fragment,} from 'react';
 import socketIOClient from 'socket.io-client'
 import { BrowserRouter as Router, Switch, Route, useHistory, useLocation } from "react-router-dom";
-import {BrowserRouter as Router, Switch, Route, useHistory, useLocation} from "react-router-dom";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import * as firebase from 'firebase'
 
@@ -12,6 +10,7 @@ import '../App.css';
 import { colors } from '../App.js'
 
 export default function CallScreen() {
+    var key = 0;
     const [connected, setConnected] = useState(true);
     const [chatText, setChatText] = useState("");
     const [allText, setAllText] = useState([]);
@@ -21,6 +20,8 @@ export default function CallScreen() {
     const [timeSinceSpoke, setTimeSinceSpoke] = useState(0);
     const [hasSpoken, setHasSpoken] = useState(false);
 
+    const socket = socketIOClient('http://localhost:3010/');
+
     const interval = useRef(undefined);
     const { transcript, resetTranscript } = useSpeechRecognition();
     const location = useLocation();
@@ -29,49 +30,46 @@ export default function CallScreen() {
     const elementRef = useRef();
 
     const [audioBLOB, setAudioBLOB] = useState(2)
-    const [transcript, setTranscript] = useState("Transcript goes here");
-    const serverPort = 3001;
+
     const endCall = () => {
         history.push('/topicview/' + topicName);
+    }
+
+    var user = firebase.auth().currentUser
+
+    if (user != null) {
+        socket.emit('passUsername', user.email);
     }
 
     //Custom hook
     function useInterval(callback, delay) {
         const savedCallback = useRef();
-      
+
         // Remember the latest callback.
         useEffect(() => {
-          savedCallback.current = callback;
+            savedCallback.current = callback;
         }, [callback]);
-      
+
         // Set up the interval.
         useEffect(() => {
-          function tick() {
-            savedCallback.current();
-          }
-          if (delay !== null) {
-            let id = setInterval(tick, delay);
-            return () => clearInterval(id);
-          }
+            function tick() {
+                savedCallback.current();
+            }
+            if (delay !== null) {
+                let id = setInterval(tick, delay);
+                return () => clearInterval(id);
+            }
         }, [delay]);
     }
 
     // Set interval
+    var prevInt = 0;
     interval.current = useInterval(() => {
-        if (oldTranscript.trim().toLowerCase() === transcript.trim().toLowerCase()) {
-            setTimeSinceSpoke(timeSinceSpoke + 0.5);
-        } else {
-            setTimeSinceSpoke(0);
-        }
-        console.log(timeSinceSpoke)
-        console.log("old" + escape(oldTranscript))
-        console.log("new" + escape(transcript))
-    socket.on('new comment', data => {
-        if(data !== undefined || data !== null) {
+        socket.once('newcomment', data => {
             let arr = allText;
             var check = true;
 
-            for(var i = data.length - 1; i > 0; i--) {
+            for(var i = data.length - 1; i > -1; i--) {
                 for(var j = 0; j < arr.length; j++) {
                     if(arr[j].text === data[i].user.split("@")[0] + ": \n" + data[i].content) {
                         check = false;
@@ -81,30 +79,34 @@ export default function CallScreen() {
                 if(check) {
                     let flags = flagchecks.check(data[i].content);
                     arr.push({ text: data[i].user.split("@")[0] + ": \n" + data[i].content, flags: flags });
-
                     setAllText(arr);
                     setConnected(keyInc());
-
                     console.log(allText);
-                } else {
-                    break;
-                }
+                } 
             }
-        }
-    });
+        });
 
-        if(transcript.trim().length > 0) {
+        if (oldTranscript.trim().toLowerCase() === transcript.trim().toLowerCase()) {
+            setTimeSinceSpoke(timeSinceSpoke + 0.5);
+        } else {
+            setTimeSinceSpoke(0);
+        }
+
+        if (transcript.trim().length > 0) {
             let arr = allText;
             if (timeSinceSpoke > 2 || !hasSpoken) {
                 resetTranscript();
                 setHasSpoken(true);
-                arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript, flags: []});
+                arr.push({ text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript, flags: [] });
+                socket.emit('comment', { 'user': firebase.auth().currentUser.email, 'content': transcript });
+
                 setTranscriptIndex(arr.length - 1);
                 let flags = flagchecks.check(transcript);
                 arr[arr.length - 1].flags = flags;
             } else {
                 let flags = flagchecks.check(transcript);
                 arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript;
+
                 arr[transcriptIndex].flags = flags;
                 setTimeSinceSpoke(0);
                 setOldTranscript(transcript);
@@ -115,9 +117,9 @@ export default function CallScreen() {
     }, 1000);
 
     if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
-        return <h1>This browser is not supported.<br/>We recommend Google Chrome.</h1>
+        return <h1>This browser is not supported.<br />We recommend Google Chrome.</h1>
     } else {
-        SpeechRecognition.startListening({continuous: true});
+        SpeechRecognition.startListening({ continuous: true });
     }
 
     const endAudio = () => {
@@ -140,11 +142,11 @@ export default function CallScreen() {
                                 {allText.map(item => {
                                     let valid = !item.flags.isOpinion && (item.flags.isSupported || !item.flags.isClaim);
                                     return (
-                                        <div style={{display: "flex", flexDirection: "row"}}>
-                                            <div className="App-logo-spin" style={{background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256, minWidth: 256, animation: valid ? "" : "App-logo-spin infinite 0.4s alternate linear"}}>
-                                                <h4 style={{margin: 4}}>{item.flags.isOpinion ? "Is this an opinion?" : ""}</h4>
-                                                <h4 style={{margin: 4}}>{item.flags.isSupported || !(item.flags.isOpinion || item.flags.isClaim) ? "" : "Is this unsupported?"}</h4>
-                                                <h4 style={{margin: 4}}>{item.flags.isClaim ? "Is the evidence factual?" : ""}</h4>
+                                        <div key={keyInc()} style={{ display: "flex", flexDirection: "row" }}>
+                                            <div className="App-logo-spin" style={{ background: valid ? colors.washed : item.flags.isClaim ? colors.tertiary : colors.secondary, padding: 16, borderTopRightRadius: 10, borderBottomRightRadius: 10, boxShadow: "0px 2px 20px grey", width: 256, minWidth: 256, animation: valid ? "" : "App-logo-spin infinite 0.4s alternate linear" }}>
+                                                <h4 style={{ margin: 4 }}>{item.flags.isOpinion ? "Is this an opinion?" : ""}</h4>
+                                                <h4 style={{ margin: 4 }}>{item.flags.isSupported || !(item.flags.isOpinion || item.flags.isClaim) ? "" : "Is this unsupported?"}</h4>
+                                                <h4 style={{ margin: 4 }}>{item.flags.isClaim ? "Is the evidence factual?" : ""}</h4>
                                             </div>
                                             <h4 style={{ marginLeft: 32, marginRight: 32, whiteSpace: "pre-line" }}>{item.text}</h4>
                                         </div>
@@ -158,7 +160,7 @@ export default function CallScreen() {
                                     let user = firebase.auth().currentUser.email;
                                     arr.push({ text: user.split("@")[0] + ": \n" + chatText, flags: flags });
                                     setAllText(arr);
-                                    
+
                                     socket.emit('comment', { 'user': user, 'content': chatText });
                                 }
                                 elementRef.current.scrollIntoView();

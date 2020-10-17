@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {BrowserRouter as Router, Switch, Route, useHistory, useLocation} from "react-router-dom";
 import * as firebase from 'firebase'
+import { hidden } from 'kleur';
 
 import {IoMdHome, IoMdCompass, IoMdContact} from "react-icons/io";
 
@@ -10,7 +11,7 @@ import Dashboard from './screens/Dashboard.js';
 import Account from './screens/Account.js';
 import TopicView from "./screens/TopicView.js"
 import CallScreen from "./screens/CallScreen.js"
-import { hidden } from 'kleur';
+import Dictaphone from './screens/Dictaphone';
 
 var firebaseConfig = {
     apiKey: "AIzaSyBt0pzMeybs4DrPnt__eRlOO7ZcjtNZs8A",
@@ -50,6 +51,9 @@ export default function App() {
                     </Route>
                     <Route exact path="/callscreen/:id">
                         <CallScreen/>
+                    </Route>
+                    <Route exact path="/dictaphone">
+                        <Dictaphone/>
                     </Route>
                     <Route path="/">
                         <Home />

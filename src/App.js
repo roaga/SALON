@@ -2,12 +2,14 @@ import React, {useState, useEffect} from 'react';
 import {BrowserRouter as Router, Switch, Route, useHistory, useLocation} from "react-router-dom";
 import * as firebase from 'firebase'
 
-import {IoMdHome, IoMdMap, IoMdContact} from "react-icons/io";
+import {IoMdHome, IoMdCompass, IoMdContact} from "react-icons/io";
 
 import './App.css';
 import Home from './screens/Home.js';
 import Dashboard from './screens/Dashboard.js';
 import Account from './screens/Account.js';
+import TopicView from "./screens/TopicView.js"
+import CallScreen from "./screens/CallScreen.js"
 import { hidden } from 'kleur';
 
 var firebaseConfig = {
@@ -43,6 +45,12 @@ export default function App() {
                     <Route path="/account">
                         <Account user={user}/>
                     </Route>
+                    <Route exact path="/topicview/:id">
+                        <TopicView/>
+                    </Route>
+                    <Route exact path="/callscreen/:id">
+                        <CallScreen/>
+                    </Route>
                     <Route path="/">
                         <Home />
                     </Route>
@@ -71,9 +79,9 @@ function NavBar() {
 
 function Footer() {
     return (
-        <div style={{marginTop: 32, width: "100%", marginLeft: 64}}>
-            <h2 style={{color: colors.secondary}}>Project Name</h2>
-            <h4 style={{color: colors.dark}}>&copy; 2020 Team Rojunthony @ HackGT 2020</h4>
+        <div style={{marginTop: 16, width: "100%", marginLeft: 64, alignItems: "center", justifyContent: "center", display: "flex", flexDirection: "column"}}>
+            <h4 style={{color: colors.secondary}}>Project Name</h4>
+            <h5 style={{color: colors.dark, marginTop: 0}}>&copy; 2020 Team Rojunthony @ HackGT 2020</h5>
         </div>
     );
 }
@@ -88,7 +96,7 @@ const MenuButton = (props) => {
     if (props.pageName === "Home") {
         icon = <IoMdHome size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 8, boxShadow: shadow}}/>;
     } else if (props.pageName === "Dashboard") {
-        icon = <IoMdMap size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 8, boxShadow: shadow}}/>;
+        icon = <IoMdCompass size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 8, boxShadow: shadow}}/>;
     } else if (props.pageName === "Account") {
         icon = <IoMdContact size={28} style={{alignSelf: "center", color: color, borderRadius: 10, padding: 8, boxShadow: shadow}}/>;
     }

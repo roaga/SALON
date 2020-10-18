@@ -1,4 +1,4 @@
-# HackGT 2020
+# SALON - HackGT 2020
 [Rohan Agarwal](https://github.com/roaga)\
 [Arjun Verma](https://github.com/arjun11verma)\
 [Anthony Wong](https://github.com/afxwong)

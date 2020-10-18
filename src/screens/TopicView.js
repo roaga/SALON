@@ -23,7 +23,7 @@ export default function TopicView() {
                     query.forEach(doc => {
                         arr.push(doc.data());
                     });
-                    setPosts(arr);
+                    setPosts(arr.sort((a, b) => a.timestamp > b.timestamp ? -1 : 1));
                 });
             }
             fetchData();

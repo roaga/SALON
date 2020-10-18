@@ -23,6 +23,8 @@ var liveAudioLog = []
 io.sockets.setMaxListeners(1);
 
 io.on('connection', (socket) => {
+    io.set('transports', ['websocket']);
+
     interval = setInterval(() => {
         socket.emit('newcomment', liveLog);
     }, 1000);

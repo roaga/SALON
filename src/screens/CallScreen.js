@@ -95,6 +95,7 @@ export default function CallScreen() {
 
     useEffect(() => {
         socket.on('newcomment', (data) => {
+            setUsers([firebase.auth().currentUser.email, data.user]);
             var arr = allText;
 
             if (data.length > oldOtherTranscript.length) {
@@ -289,7 +290,7 @@ const flagchecks = {
 
         const isOpinionWords = ["believe", "think", "feel", "opinion", "makes sense", "wonder", "weak", "strong", "looks", "seems", "tells", "motives", "character", "should", "ought", "seriously", "like", "love", "loves", "good", "bad", "great", "terrible"];
         const isSupportedWords = ["therefore", "so", "thus", "because", "since", "warrant", "then"];
-        const isClaimWords = ["known", "know", "fact", "true", "false", "evident", "obvious", "clear", "consensus", "agreed", "evidence", "data", "certainty", "impossible", "right", "wrong"];
+        const isClaimWords = ["known", "know", "fact", "true", "false", "evident", "obvious", "clear", "consensus", "agreed", "evidence", "data", "certainty", "certain", "impossible", "right", "wrong", "accurate", "inaccurate"];
 
         text.trim().replace(/[^\w\s]|_/g, "").replace(/\s+/g, " ").split(' ').forEach(word => {
             if (isOpinionWords.includes(word)) { flags.isOpinion = true; }

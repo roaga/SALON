@@ -1,0 +1,31 @@
+{
+  "files": {
+    "main.css": "/static/css/main.ba86ff82.chunk.css",
+    "main.js": "/static/js/main.0ae54da7.chunk.js",
+    "main.js.map": "/static/js/main.0ae54da7.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.b23d2ed3.js",
+    "runtime-main.js.map": "/static/js/runtime-main.b23d2ed3.js.map",
+    "static/js/2.3758ec7d.chunk.js": "/static/js/2.3758ec7d.chunk.js",
+    "static/js/2.3758ec7d.chunk.js.map": "/static/js/2.3758ec7d.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.d8b4bbb4f9dbdf03f3be4b1cce837bc2.js": "/precache-manifest.d8b4bbb4f9dbdf03f3be4b1cce837bc2.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/main.ba86ff82.chunk.css.map": "/static/css/main.ba86ff82.chunk.css.map",
+    "static/js/2.3758ec7d.chunk.js.LICENSE.txt": "/static/js/2.3758ec7d.chunk.js.LICENSE.txt",
+    "static/media/Call.png": "/static/media/Call.6f8bee38.png",
+    "static/media/Collection.png": "/static/media/Collection.43d29cd9.png",
+    "static/media/ExploreTopics.png": "/static/media/ExploreTopics.26f25704.png",
+    "static/media/Salon.jpg": "/static/media/Salon.e16cd3bc.jpg",
+    "static/media/cool-background-1.svg": "/static/media/cool-background-1.1402c28d.svg",
+    "static/media/cool-background-2.svg": "/static/media/cool-background-2.102aa481.svg",
+    "static/media/cool-background-3.svg": "/static/media/cool-background-3.0cb87c72.svg",
+    "static/media/cool-background-4.svg": "/static/media/cool-background-4.404ff6a9.svg",
+    "static/media/cool-background.svg": "/static/media/cool-background.2a3e5a90.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.b23d2ed3.js",
+    "static/js/2.3758ec7d.chunk.js",
+    "static/css/main.ba86ff82.chunk.css",
+    "static/js/main.0ae54da7.chunk.js"
+  ]
+}

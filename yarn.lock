@@ -2637,7 +2637,7 @@ autoprefixer@^9.6.1:
     postcss "^7.0.26"
     postcss-value-parser "^4.0.2"
 
-av@0.4.x:
+av@0.4.x, av@^0.4.9:
   version "0.4.9"
   resolved "https://registry.yarnpkg.com/av/-/av-0.4.9.tgz#8c7165f739580a541ec95071423492b3ffdc6e20"
   integrity sha1-jHFl9zlYClQeyVBxQjSSs//cbiA=

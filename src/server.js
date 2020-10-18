@@ -1,5 +1,5 @@
-const { Socket } = require('dgram');
-const { read } = require('fs');
+const {Socket} = require('dgram');
+const {read} = require('fs');
 
 const app = require('express')();
 const server = require('http').createServer(app);
@@ -12,6 +12,7 @@ server.listen(port, () => {
 });
 
 let interval;
+let intervalA;
 
 var userMap = []
 var clients = []
@@ -26,6 +27,10 @@ io.on('connection', (socket) => {
     interval = setInterval(() => {
         socket.emit('newcomment', liveLog);
     }, 1000);
+    intervalA = setInterval(() => {
+        socket.emit('audiodata', liveAudioLog);
+    }, 250);
+    
 
     socket.on("passUsername", function (data) {
         var tempDict = { 'user': data, 'transcript': []};
@@ -35,11 +40,24 @@ io.on('connection', (socket) => {
     });
 
     socket.on('comment', function (data) {
-        liveLog.push({'user': data.user, 'content': data.content});
+        var flag = true;
+        for(var i = 0; i < liveLog.length; i++) {
+            if(liveLog[i].topic === data.topic) {
+                liveLog[i].content.push(data.content);
+                flag = false;
+            }
+        }
+        if(flag) {
+            liveLog.push({'content': [data.content], 'topic': data.topic});
+        }
     });
 
     socket.on('editcomment', function (data) {
-        liveLog[data.index].content = data.content;
+        for(var i = 0; i < liveLog.length; i++) {
+            if(liveLog[i].topic === data.topic) {
+                liveLog[i].content[data.index] = data.content;
+            }
+        }
     });
 
     socket.on('transcript data', function (data) {
@@ -54,8 +72,8 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('get audio', function(data) {
-        liveAudioLog.push({user: data.user, audioData: data.audioData})
+    socket.on('relayaudio', function(data) {
+        liveAudioLog.push({'user': data.user, 'binData': data.binData});
     });
 
     socket.on('disconnect', () => {
@@ -70,11 +88,16 @@ io.on('connection', (socket) => {
 
         if(clients.length === 0) {
             clearInterval(interval);
+            clearInterval(intervalA);
+            liveLog = [];
+            liveAudioLog = [];
+            console.log("Intervals killed. This server is kinda dead.")
         }
 
         if(user !== undefined) {
             console.log(user + " disconnected");
             console.log(liveLog);
+            console.log(liveAudioLog);
         }
 
         for (var a = 0; a < userMap.length; a++) {

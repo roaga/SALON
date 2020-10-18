@@ -83,7 +83,7 @@ export default function Account(props) {
                 </div>
             :
                 <div style={{backgroundColor: "white", borderRadius: 10, boxShadow: "0px 2px 20px grey", padding: 16, width: "50%", marginLeft: "25%"}}>
-                    <h1>Your Account</h1> 
+                    <h1>Hello, {firebase.auth().currentUser.email.split("@")[0]}.</h1> 
                     <form onSubmit={(e) => signOutUser(e)} style={{alignItems: "center", justifyContent: "center", display: "flex"}}>
                         <input type="submit" value="Sign Out"/>
                     </form>

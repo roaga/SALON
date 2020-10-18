@@ -1,59 +1,61 @@
-const { Socket } = require('dgram');
-const { read } = require('fs');
+const {Socket} = require('dgram');
+const {read} = require('fs');
 
 const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-const port = process.env.PORT || 3001
-
-app.get('/', (req, res) => {
-    res.send("Hello");
-});
+const port = process.env.PORT || 2050
 
 server.listen(port, () => {
-    console.log('listening on *:3001');
+    console.log('listening on port 2050');
 });
 
 let interval;
+let intervalA;
 
 var userMap = []
 var clients = []
 var liveLog = []
 var liveAudioLog = []
 
-io.on("connection", (socket) => {
-    if (interval) {
-        clearInterval(interval);
-    }
+io.sockets.setMaxListeners(1);
 
-    interval = setInterval(() => getApiAndEmit(socket), 1000); // every second, it returns the socket data
+io.on('connection', (socket) => {
+    interval = setInterval(() => {
+        socket.emit('newcomment', liveLog);
+    }, 1000);
+    intervalA = setInterval(() => {
+        socket.emit('audiodata', liveAudioLog);
+    }, 250);
+    
 
     socket.on("passUsername", function (data) {
-        var isValidUser = true;
         var tempDict = { 'user': data, 'transcript': []};
-        for (var i = 0; i < userMap.length; i++) {
-            if (userMap[i].user === data) {
-                isValidUser = false;
-            }
-        }
-        if (isValidUser) {
-            console.log("User " + data + " has joined");
-            userMap.push(tempDict);
-            clients.push({'socket': socket, 'user': data });
-        }
+        console.log("User " + data + " has joined");
+        userMap.push(tempDict);
+        clients.push({'socket': socket, 'user': data});
     });
 
     socket.on('comment', function (data) {
         var flag = true;
         for(var i = 0; i < liveLog.length; i++) {
-            if(liveLog[i].user === data.user && liveLog[i].content === data.content) {
+            if(liveLog[i].topic === data.topic) {
+                liveLog[i].content.push(data.content);
                 flag = false;
             }
         }
         if(flag) {
-            liveLog.push({'user': data.user, 'content': data.content});
-        } 
+            liveLog.push({'content': [data.content], 'topic': data.topic});
+        }
+    });
+
+    socket.on('editcomment', function (data) {
+        for(var i = 0; i < liveLog.length; i++) {
+            if(liveLog[i].topic === data.topic) {
+                liveLog[i].content[data.index] = data.content;
+            }
+        }
     });
 
     socket.on('transcript data', function (data) {
@@ -68,36 +70,39 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on('get audio', function(data) {
-        liveAudioLog.push({user: data.user, audioData: data.audioData})
+    socket.on('relayaudio', function(data) {
+        liveAudioLog.push({'user': data.user, 'binData': data.binData});
     });
 
     socket.on('disconnect', () => {
-        clearInterval(interval);
-        
         for (var i = 0; i < clients.length; i++) {
             if (clients[i].socket === socket) {
                 var user = clients[i].user;
                 clients.splice(i, 1);
+                console.log(clients.length);
                 break;
             }
+        }
+
+        if(clients.length === 0) {
+            clearInterval(interval);
+            clearInterval(intervalA);
+            liveLog = [];
+            liveAudioLog = [];
+            console.log("Intervals killed. This server is kinda dead.")
         }
 
         if(user !== undefined) {
             console.log(user + " disconnected");
             console.log(liveLog);
+            console.log(liveAudioLog);
         }
 
-        for (var i = 0; i < userMap.length; i++) {
-            if (userMap[i].user === user) {
+        for (var a = 0; a < userMap.length; a++) {
+            if (userMap[a].user === user) {
                 userMap.splice(i, 1);
                 break;
             }
         }
     });
 });
-
-const getApiAndEmit = (socket) => {
-    socket.broadcast.emit('new comment', liveLog);
-    socket.broadcast.emit('listeningforaudio', liveAudioLog);  
-};

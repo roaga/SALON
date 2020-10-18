@@ -18,7 +18,7 @@ jobs:
     - name: Set up Node.js version
       uses: actions/setup-node@v1
       with:
-        node-version: '12.13.0'
+        node-version: '10.6.0'
 
     - name: npm install, build, and test
       run: |
@@ -31,5 +31,5 @@ jobs:
       with:
         app-name: 'salon-hackgt'
         slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_8ae9fb75e4d84f25bba381c2d27ad806 }}
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_01db1fedba5e4586a957e0c1f413d0cc }}
         package: .

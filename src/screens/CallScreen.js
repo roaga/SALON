@@ -9,7 +9,7 @@ import { IoMdCall, IoMdBook, IoMdCloseCircle } from "react-icons/io";
 import '../App.css';
 import { colors } from '../App.js'
 
-const port = 'http://localhost:2050';
+const port = process.env.port;
 const socket = socketIOClient(port);
 
 export default function CallScreen() {

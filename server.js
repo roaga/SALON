@@ -6,10 +6,8 @@ const app = require('express')();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-const port = process.env.PORT || 2050
-
-server.listen(port, () => {
-    console.log('listening on port 2050');
+server.listen(process.env.port, () => {
+    console.log('listening on port' + process.env.port);
 });
 
 let interval;

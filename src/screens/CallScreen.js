@@ -64,6 +64,7 @@ export default function CallScreen() {
 
     useEffect( () => {
         socket.on('newcomment', (data) => {
+            setUsers([firebase.auth().currentUser.email, data.user]);
             var arr = allText;
             for(var i = arr.length; i < data.length; i++) {
                 let flags = flagchecks.check(data[i].content);

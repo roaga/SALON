@@ -18,8 +18,10 @@ export default function CallScreen() {
     const [allText, setAllText] = useState([]);
     const [started, setStarted] = useState(false);
     const [oldTranscript, setOldTranscript] = useState("");
+    const [oldOtherTranscript, setOldOtherTranscript] = useState("");
     const [transcriptIndex, setTranscriptIndex] = useState(-1);
     const [timeSinceSpoke, setTimeSinceSpoke] = useState(0);
+    const [otherSpeaking, setOtherSpeaking] = useState(false);
     const [hasSpoken, setHasSpoken] = useState(false);
     const [users, setUsers] = useState(["ro.agarwal@hotmail.com", "arjun11verma@gmail.com"]);
     
@@ -67,6 +69,13 @@ export default function CallScreen() {
                 let flags = flagchecks.check(data[i].content);
                 arr.push({text: data[i].content, flags: flags});
             }
+
+            if (data.length > oldOtherTranscript.length) {
+                setOtherSpeaking(true);
+            } else {
+                setOtherSpeaking(false);
+            }
+            setOldOtherTranscript(data.map(datum => datum.content));
 
             for(var i = 0; i < data.length; i++) {
                 if(arr[i].content !== data[i].content) {
@@ -207,7 +216,7 @@ export default function CallScreen() {
                             </div>
                             <div style={{ display: "flex", flexDirection: "column", marginTop: 16 }}>
                                 {users.map(user => {
-                                    let speaking = timeSinceSpoke < 1.5;
+                                    let speaking = (user === firebase.auth().currentUser.email) ? timeSinceSpoke < 1.5 : otherSpeaking;
                                     return (
                                         <div style={{ background: colors.primary, borderRadius: 10, boxShadow: "0px 2px 20px grey", width: "20%", height: "20%", padding: 64, margin: 64, justifyContent: "space-evenly", textAlign: "center", animation: speaking ? "App-logo-spin infinite 0.4s alternate ease-in-out" : "" }}>
                                             <h2>{user.split("@")[0]}</h2>

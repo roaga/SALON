@@ -29,7 +29,7 @@ io.on('connection', (socket) => {
         var tempDict = { 'user': data, 'transcript': []};
         console.log("User " + data + " has joined");
         userMap.push(tempDict);
-        clients.push({'socket': socket, 'user': data });
+        clients.push({'socket': socket, 'user': data});
     });
 
     socket.on('comment', function (data) {

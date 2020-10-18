@@ -131,11 +131,9 @@ export default function CallScreen() {
                     addComment(firebase.auth().currentUser.email, firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""));
                 } else {
                     let flags = flagchecks.check(transcript);
-                    let oldText = arr[transcriptIndex].text.split("\n")[1];
-                    let newText = transcript.startsWith(oldText) ? transcript : oldText + " " + transcript;
                     arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript;
                     arr[transcriptIndex].flags = flags;
-                    editComment(transcriptIndex, firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.startsWith(oldText) ? transcript : oldText + " " + transcript);
+                    editComment(transcriptIndex, (firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript));
                 }
                 setHasSpoken(true);
                 setAllText(arr);

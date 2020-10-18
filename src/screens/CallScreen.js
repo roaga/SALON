@@ -22,8 +22,12 @@ export default function CallScreen() {
     const [timeSinceSpoke, setTimeSinceSpoke] = useState(0);
     const [hasSpoken, setHasSpoken] = useState(false);
     const [users, setUsers] = useState(["ro.agarwal@hotmail.com", "arjun11verma@gmail.com"]);
-    
+    const [bin, setBin] = useState(0);
+    const [stream, setStream] = useState(null);
+    const[recorder, setRecorder] = useState();
+
     var key = 0;
+    var user = firebase.auth().currentUser;
 
     const interval = useRef(undefined);
     const { transcript, resetTranscript } = useSpeechRecognition();
@@ -33,13 +37,13 @@ export default function CallScreen() {
     const elementRef = useRef();
 
     const addComment = (u, c) => {
-        socket.emit('comment', { 'user': u, 'content': c });
-        console.log("emitted");
+        socket.emit('comment', {'user': u, 'content': c, 'topic': topicName});
+        console.log(u, c, topicName);
     }
 
     const editComment = (i, c) => {
-        socket.emit('editcomment', {'index': i, 'content': c});
-        console.log("emitted");
+        socket.emit('editcomment', { 'index': i, 'content': c, 'topic': topicName });
+        console.log(i, c, topicName);
     }
 
     const endCall = () => {
@@ -60,21 +64,55 @@ export default function CallScreen() {
         return () => endCall();
     }, []);
 
-    useEffect( () => {
-        socket.on('newcomment', (data) => {
-            var arr = allText;
-            for(var i = arr.length; i < data.length; i++) {
-                let flags = flagchecks.check(data[i].content);
-                arr.push({text: data[i].content, flags: flags});
-            }
+    useEffect(() => {
+        navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(stream => {
+            const record = new MediaRecorder(stream, {audioBitsPerSecond : 128000});
 
-            for(var i = 0; i < data.length; i++) {
-                if(arr[i].content !== data[i].content) {
-                    let flags = flagchecks.check(data[i].content);
-                    arr[i] = {text: data[i].content, flags: flags};
+            record.start();
+
+            setRecorder(record);
+        });
+    }, []);
+
+    useEffect(() => {
+        
+    }, []);
+
+    setInterval(() => {
+        if(recorder !== undefined) {
+            recorder.ondataavailable = (e) => {
+                console.log("Bindata");
+                var bindata;
+                bindata = new Blob(e);
+                if(user !== null) {
+                    socket.emit('relayaudio', {'user': user.email, 'binData': bindata});
                 }
             }
-            console.log(arr);
+        }
+    }, 1500);
+
+    useEffect(() => {
+        socket.on('newcomment', (data) => {
+            var arr = allText;
+
+            for(var i = 0; i < data.length; i++) {
+                if(data[i].topic === topicName) {
+
+                    for(var a = arr.length; a < data[i].content.length; a++) {
+                        let flags = flagchecks.check(data[i].content[a]);
+                        arr.push({ text: data[i].content[a], flags: flags });
+                    }
+
+                    for (var b = 0; b < data[i].content.length; b++) {
+                        if(user !== null) {
+                            if (arr[i].content !== data[i].content[b] && user.email !== data[i].user) {
+                                let flags = flagchecks.check(data[i].content[b]);
+                                arr[i] = { text: data[i].content[b], flags: flags };
+                            }
+                        }
+                    }
+                }
+            }
 
             setAllText(arr);
         });
@@ -101,6 +139,8 @@ export default function CallScreen() {
         }, [delay]);
     }
 
+
+
     // Set interval
     interval.current = useInterval(() => {
         if (!SpeechRecognition.browserSupportsSpeechRecognition()) {
@@ -124,16 +164,22 @@ export default function CallScreen() {
                 let arr = allText;
                 if (timeSinceSpoke > 1.5 || !hasSpoken) {
                     let oldText = transcriptIndex >= 0 ? arr[transcriptIndex].text.split("\n")[1] : "";
-                    arr.push({text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""), flags: []});
+                    arr.push({ text: firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""), flags: [] });
                     setTranscriptIndex(arr.length - 1);
                     let flags = flagchecks.check(transcript);
                     arr[arr.length - 1].flags = flags;
-                    addComment(firebase.auth().currentUser.email, firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""));
-                } else {
+
+                    if(topicName !== undefined) {
+                        addComment(firebase.auth().currentUser.email, firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript.replace(oldText, ""));
+                    }
+                    } else {
                     let flags = flagchecks.check(transcript);
                     arr[transcriptIndex].text = firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript;
                     arr[transcriptIndex].flags = flags;
-                    editComment(transcriptIndex, (firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript));
+
+                    if(topicName !== undefined) {
+                        editComment(transcriptIndex, (firebase.auth().currentUser.email.split("@")[0] + ": \n" + transcript));
+                    }
                 }
                 setHasSpoken(true);
                 setAllText(arr);
@@ -143,10 +189,8 @@ export default function CallScreen() {
         }
     }, 500);
 
-    var user = firebase.auth().currentUser;
-
-    useEffect( () => {
-        if(user != null) {
+    useEffect(() => {
+        if (user != null) {
             socket.emit('passUsername', user.email);
             console.log(user);
             console.log(socket);
